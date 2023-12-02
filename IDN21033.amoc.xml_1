@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<amoc version="1.7" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.bom.gov.au/schema/v1.7/amoc.xsd">
+    <source>
+        <sender>Australian Government Bureau of Meteorology</sender>
+        <region>New South Wales</region>
+        <office>NSWRO</office>
+        <copyright>http://www.bom.gov.au/other/copyright.shtml</copyright>
+        <disclaimer>http://www.bom.gov.au/other/disclaimer.shtml</disclaimer>
+    </source>
+    <identifier>IDN21033</identifier>
+    <issue-time-utc>2023-11-27T07:07:45Z</issue-time-utc>
+    <issue-time-local tz="EDT">2023-11-27T18:07:45+11:00</issue-time-local>
+    <sent-time>2023-11-27T07:07:45Z</sent-time>
+    <expiry-time>2023-11-27T10:07:42Z</expiry-time>
+    <validity-bgn-time-local tz="EDT">2023-11-27T18:07:42+11:00</validity-bgn-time-local>
+    <validity-end-time-local tz="EDT">2023-11-27T21:07:41+11:00</validity-end-time-local>
+    <status>O</status>
+    <service>WSW</service>
+    <sub-service>WST</sub-service>
+    <product-type>W</product-type>
+    <phase>UPD</phase>
+    <hazard index="1" parent-aac="NSW_EV001" phase="UPD" type="STW" severity="STD" urgency="UNK" certainty="UNK" start-time-utc="2023-11-27T07:07:42Z" end-time-utc="2023-11-27T10:07:42Z">
+        <area-list>
+            <area aac="NSW_PW002" phase="NEW" description="Mid North Coast" type="public-district"/>
+            <area aac="NSW_PW011" phase="NEW" description="North West Slopes and Plains" type="public-district"/>
+            <area aac="NSW_PW012" phase="UPD" description="Central West Slopes and Plains" type="public-district"/>
+            <area aac="NSW_PW016" phase="UPD" description="Upper Western" type="public-district"/>
+            <area aac="NSW_PW015" phase="UPD" description="Lower Western" type="public-district"/>
+            <area aac="NSW_PW010" phase="UPD" description="Snowy Mountains" type="public-district"/>
+        </area-list>
+        <phenomenon-list>
+            <phenomenon type="W"/>
+            <phenomenon type="LH"/>
+            <phenomenon type="R"/>
+        </phenomenon-list>
+        <priority>W</priority>
+        <headline>Severe Thunderstorm Warning for Damaging Winds, Large Hail and Heavy Rainfall for Mid North Coast, North West Slopes and Plains, Central West Slopes and Plains, Upper Western, Lower Western and Snowy Mountains forecast districts</headline>
+    </hazard>
+</amoc>
