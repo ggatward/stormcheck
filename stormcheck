@@ -96,6 +96,7 @@ STORMLOG=/tmp/stormlog
 # if [ "$STATE" == "vk8" ] ; then TYPE=3 ; fi
 
 for WARNING_FILE in $WARNING_LIST ; do
+    unset DISPLIST
     #  Download the warning pages
     echo "DEBUG: $WARNING_URL"
     WARNING_URL=ftp://ftp.bom.gov.au/anon/gen/fwo/$WARNING_FILE.amoc.xml

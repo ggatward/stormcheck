@@ -93,6 +93,7 @@ STORMLOG=/tmp/stormlog
 
 
 for WARNING_FILE in $WARNING_LIST ; do
+    unset DISPLIST
     #  Download the warning pages
     # WARNING_URL=ftp://ftp.bom.gov.au/anon/gen/fwo/$WARNING_FILE.amoc.xml
     echo; echo "DEBUG: Processing $WARNING_FILE"
