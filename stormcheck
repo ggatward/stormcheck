@@ -78,6 +78,7 @@ fi
 
 TMPDIR=/tmp
 NOWARN=TRUE      # We start the script with no warnings.
+STORMLOG=/tmp/stormlog
 # VALIDWARN=NO
 # PLAYSTRING1=""
 # PLAYSTRING2=""
@@ -88,7 +89,6 @@ NOWARN=TRUE      # We start the script with no warnings.
 #   OUTWAV=/tmp/ts_warn.wav
 #   OUTWAV1=/tmp/ts_warn1
 #   FESTPATH=/usr/bin
-#   STORMLOG=/tmp/stormlog
 #   STORMAUDIO=$AUDIO/custom/stormcheck
 
 # if [ "$STATE" == "vk2" ] ; then TYPE=2 ; fi
@@ -106,6 +106,7 @@ for WARNING_FILE in $WARNING_LIST ; do
     else
         # If we have a current warning we clear the NOWARN flag
         NOWARN=FALSE
+        DISPLIST="$DISPLIST $AREA_DESC"
     fi
 
 
@@ -119,339 +120,111 @@ for WARNING_FILE in $WARNING_LIST ; do
     echo "DEBUG: END   = $END"
     echo "DEBUG: HEADLINE = $HEADLINE"
 
-    # TODO: Does the current time fall within the validity window?
-
-
+    # Does the current time fall within the validity window?
+    # Convert timestamps from ISO-8601 format to Epoch to compare numerically with the current time
+    StartEpoch=$(date -d $START +"%s")
+    EndEpoch=$(date -d $END +"%s")
+    if [ $(date +"%s") -gt $StartEpoch ] && [ $(date +"%s") -lt $EndEpoch ]; then
+        echo "DEBUG: Current time is inside warning validity period"
+    else
+        # Current time is outside warning validity - skip and process the next item
+        echo "DEBUG: Current time is outside warning validity period"
+        continue
+    fi
 
     #################################################################################
     # Build an array containing the areas affected by this warning
-    i=0; AREALIST=()
-    while IFS='' read -r value; do
-        AREALIST+=("$value")
-    done <<-EOT
-    $(cat $TMPDIR/$WARNING_FILE.amoc.xml | grep 'area aac')
-EOT
-
-    printf '%s\n' "${AREALIST[@]}"
-
-    for AREA in ${AREALIST[@]}; do
-        echo $AREA
+    cat $TMPDIR/$WARNING_FILE.amoc.xml | grep 'area aac' > /tmp/areas
+    WARNCOUNT=0
+    while read -r AREA; do
         AREA_AAC=$(echo $AREA | cut -f2 -d\")
         AREA_PHASE=$(echo $AREA | cut -f4 -d\")
         AREA_DESC=$(echo $AREA | cut -f6 -d\")
-        if [ "$AREA_PHASE" != "CAN" ]; then
-            echo "DEBUG: Warning current for "$AREA_AAC" ("$AREA_DESC")"
-        else
+        if [ "$AREA_PHASE" == "CAN" ]; then
             echo "DEBUG: Warning cancelled for "$AREA_AAC" ("$AREA_DESC")"
+        else
+            echo "DEBUG: Warning current for "$AREA_AAC" ("$AREA_DESC")"
+            WARNCOUNT=$(expr $WARNCOUNT + 1)
+            # Check if the active warning areas match our selectors
+            if [ $(grep -c ^$AREA_AAC stormcheck_locations.$STATE) -ne 0 ]; then
+                NOWARN=FALSE
+                DISPLIST="$DISPLIST $AREA_DESC"
+            fi
         fi
+    done < /tmp/areas
 
-    done
+    # If we haven't found a warning of interest to us, skip to the next input file.
+    if [ $WARNCOUNT -eq 0 ]; then
+        echo "No warnings of interest"
+        continue
+    fi
+
+    # Start building out variables to use when building audio playlist
+    ISSUE_HOUR=$(date -d $START +"%l")
+    ISSUE_MIN=$(date -d $START +"%M")
+    ISSUE_AMPM=$(date -d $START +"%p")
+    #
+    WARN_END_HOUR=$(date -d $END +"%l")
+    WARN_END_MIN=$(date -d $END +"%M")
+    WARN_END_AMPM=$(date -d $END +"%p")
+
+    echo "####### DEBUG #######"
+    echo "Issue Time = $ISSUE_HOUR:$ISSUE_MIN $ISSUE_AMPM"
+    echo "Warn End Hour = $WARN_END_HOUR"
+    echo "Warn End Minute = $WARN_END_MIN"
+    echo "Warn End AMPM = $WARN_END_AMPM"
 
 
-    echo
+    # If we want TTS for the entire warning we need to handle that here
+    if [ "$TTS" = "YES" ] ; then
+        echo "DEBUG: Download warning text for TTS (TBD)"
+        OUTFILE="Something downloaded here..."
+    fi
+
+
+    #############################################################################
+    # Output the results
+    #
+    echo "" > $STORMLOG
+    echo "Warning for: "$DISPLIST >> $STORMLOG
+    echo "Issued at: "$ISSUE_HOUR $ISSUE_MIN $ISSUE_AMPM >> $STORMLOG
+    if [ "$WARN_END_HOUR" != "" ] && [ "$WARN_END_MIN" != "" ] ; then
+    echo "Valid until: "$WARN_END_HOUR $WARN_END_MIN $WARN_END_AMPM >> $STORMLOG
+    fi
+    echo "" >> $STORMLOG
+    if [ "$TTS" = "YES" ] ; then cat $OUTFILE >> $STORMLOG; fi
+
+    echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+    cat $STORMLOG
+    echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+
+
+
+
 done
 
 # Decide if we need to continue
-echo "DEBUG: NOWARN = $NOWARN"
+if [ "$NOWARN" == "TRUE" ]; then
+    echo "DEBUG: No warnings of interest - exiting"
+    exit 0
+fi
+
+echo; echo "DEBUG: Continue to process warnings of interest..."
 
 
 
 
-#   grep "CANCEL" $INFILE >/dev/null
-#   if [ "$?" = "0" ] ; then
-#     echo "Cancelled Warning!"
-#     if [ "$X" == "1" ] ; then WARN1=0 ; fi
-#     NOWARN=TRUE
-#   fi
-
-#   if [ "$NOWARN" != "TRUE" ] ; then
-#     # Process available warnings
-#     #
-#     if [ "$TYPE" = "2" ] ; then
-#       END=`awk '{ if ( $0 ~ "Issued at" ) print NR }' $INFILE`
-#       awk -v end="$END" '{ if ( $0 ~ "IDN" ) { S1 = NR; S2 = end } if ( NR >= S1 && NR <= S2 ) print $0 }' $INFILE > $INFILE.1
-#     else
-#       cp $INFILE $INFILE.1
-#     fi
-
-#     for LOC in `cat $LOCLIST | awk '{ if ( $0 !~/#/ ) print $0 }'` ; do
-#       LOC1=`echo $LOC | tr "_" " "`
-#       grep -i "$LOC1" $INFILE.1 >/dev/null
-#       if [ "$?" = "0" ] ; then
-#         echo $LOC=YES
-#         VALIDWARN=YES
-#         PLAYLIST="$PLAYLIST $STORMAUDIO/$LOC"
-#         DISPLIST="$DISPLIST $LOC"
-#       else
-#         echo $LOC=NO
-#       fi
-#     done
-
-#     ########################################################################
-#     #
-#     if [ "$VALIDWARN" == "NO" ] ; then
-#       echo "Warning not for defined locations"
-#       if [ "$X" == "1" ] ; then WARN1=0 ; fi
-#       NOWARN=TRUE
-#     fi
-
-#     ################################################################
-#     #  Work out the times included in the warning
-#     #
-#     # Type 1 - Sydney Metro
-#     if [ "$TYPE" == "1" ] ; then
-#       ISSUE_TIME=`grep "Issued at" $INFILE | awk '{ print $3 " " $4 }' | tr ":." " " | tr "AMP" "amp"`
-#       ISSUE_HOUR=`echo $ISSUE_TIME | awk '{ print $1 }'`
-#       ISSUE_MIN=`echo $ISSUE_TIME | awk '{ print $2 }'`
-#       ISSUE_AMPM=`echo $ISSUE_TIME | awk '{ print $3 }'`
-#       #
-#       WARN_END=`grep "warning is current" $INFILE | awk '{ print $9 " " $10 }' | tr ":." " " | tr "AMP" "amp"`
-#       WARN_END_HOUR=`echo $WARN_END | awk '{ print $1 }'`
-#       WARN_END_MIN=`echo $WARN_END | awk '{ print $2 }'`
-#       WARN_END_AMPM=`echo $WARN_END | awk '{ print $3 }'`
-#     fi
-
-#     # Type 2 - Rural NSW Warnings
-#     if [ "$TYPE" == "2" ] ; then
-#       ISSUE_TIME=`grep "Issued at" $INFILE | awk '{ print $3 " " $4 }' | tr ":." " " | tr "AMP" "amp"`
-#       ISSUE_HOUR=`echo $ISSUE_TIME | awk '{ print $1 }'`
-#       ISSUE_MIN=`echo $ISSUE_TIME | awk '{ print $2 }'`
-#       ISSUE_AMPM=`echo $ISSUE_TIME | awk '{ print $3 }'`
-#       #
-#       WARN_END=`grep "The next warning is due" $INFILE | awk '{ print $10 " " $11 }' | tr ":." " " | tr "AMP" "amp"`
-#       WARN_END_HOUR=`echo $WARN_END | awk '{ print $1 }'`
-#       WARN_END_MIN=`echo $WARN_END | awk '{ print $2 }'`
-#       WARN_END_AMPM=`echo $WARN_END | awk '{ print $3 }'`
-#     fi
-
-#     if [ "$TYPE" == "3" ] ; then
-#       # Type 3 - Darwin Warnings
-#       ISSUE_3=`awk '{ if ( $0 ~/ssued by/ ) { S1 = NR; S2 = S1 + 1 } if ( NR >= S1 && NR <= S2 ) print $0 }' /tmp/tmp_warn \
-#         | awk '{ if ( $0 ~/:/ ) print $0 }' | awk '{ if ( $1 ~/:/ ) print $1" "$2 }{ if ( $2 ~/:/ ) print $2" "$3 }'`
-#       ISSUE_HOUR=`echo $ISSUE_3 | tr ":." " " | tr "AMP" "amp" | awk '{ print $1 }'`
-#       ISSUE_MIN=`echo $ISSUE_3 | tr ":." " " | tr "AMP" "amp" | awk '{ print $2 }'`
-#       ISSUE_AMPM=`echo $ISSUE_3 | tr ":." " " | tr "AMP" "amp" | awk '{ print $3 }'`
-
-#       WARN_END=`grep "will be issued no later than" $INFILE | awk '{ print $12 " " $13 }' | tr ":." " " | tr "AMP" "amp"`
-#       WARN_END_HOUR=`echo $WARN_END | awk '{ print $1 }'`
-#       WARN_END_MIN=`echo $WARN_END | awk '{ print $2 }'`
-#       WARN_END_AMPM=`echo $WARN_END | awk '{ print $3 }' | cut -c 1-2`
-#     fi
-
-#     # Type 4 - Victorian Warnings
-#     if [ "$TYPE" == "4" ] ; then
-#       ISSUE_TIME=`grep "Issued at" $INFILE | awk '{ print $3 " " $4 }' | tr ":." " " | tr "AMP" "amp"`
-#       ISSUE_HOUR=`echo $ISSUE_TIME | awk '{ print $1 }'`
-#       ISSUE_MIN=`echo $ISSUE_TIME | awk '{ print $2 }'`
-#       ISSUE_AMPM=`echo $ISSUE_TIME | awk '{ print $3 }'`
-#       #
-# #      WARN_END=`grep "The next warning is due" $INFILE | awk '{ print $10 " " $11 }' | tr ":." " " | tr "AMP" "amp"`
-#       WARN_END=`grep "The next warning is due" $INFILE | awk '{ print $10 " " $11 }' | tr ":." " "`
-#       WARN_END_HOUR=`echo $WARN_END | awk '{ print $1 }' | tr -d "amp"`
-#       WARN_END_MIN=`echo $WARN_END | awk '{ print $2 }'`
-#       WARN_END_AMPM=`echo $WARN_END | awk '{ print $3 }' | cut -c 1-2 | tr A-Z a-z`
-
-#       if [ "$WARN_END_MIN" == "am" ] ; then
-#         WARN_END_AMPM=am
-#         WARN_END_MIN=00
-#       fi
-#       if [ "$WARN_END_MIN" == "pm" ] ; then
-#         WARN_END_AMPM=pm
-#         WARN_END_MIN=00
-#       fi
-
-# #      if [ -n "$WARN_END_HOUR" ] ; then
-# #        WARN_END_MIN=00
-# #      else
-# #        WARN_END_MIN=""
-# #      fi
-# #      WARN_END_AMPM=`echo $WARN_END | awk '{ print $1 }' | tr -d "1234567890"`
-
-#     fi
-
-#     if [ "$ISSUE_HOUR" = "" ] && [ "$ISSUE_MIN" = "" ] ; then
-#       echo "No Issue Times - Probably Cancelled"
-#       if [ "$X" == "1" ] ; then WARN1=0 ; fi
-#       NOWARN=TRUE
-#     fi
-#   fi
-
-#   if [ "$NOWARN" != "TRUE" ] ; then
-#     if [ "$WARN_END_HOUR" = "" ] && [ "$WARN_END_MIN" = "" ] ; then
-#       echo ""
-#       echo "WARNING: No End Time found - warning could be false"
-#       echo ""
-#     fi
-
-#     ###########################################
-#     # Correct time and convert to H24
-#     #
-#     if [ "$WARN_END_MIN" == "am" ] ; then
-#       WARN_END_AMPM=am
-#       WARN_END_MIN=00
-#     fi
-#     if [ "$WARN_END_MIN" == "pm" ] ; then
-# echo "debug2"
-#       WARN_END_AMPM=pm
-#       WARN_END_MIN=00
-#     fi
-
-#     if [ "$WARN_END_AMPM" == "pm" ] && [ "$WARN_END_HOUR" != "12" ] ; then
-#       END_HOUR_24=`expr $WARN_END_HOUR + 12`
-#     else
-#       END_HOUR_24=`echo $WARN_END_HOUR`
-#     fi
-#     END_MIN=`echo $WARN_END_MIN`
-
-#     END_TIME="$END_HOUR_24$END_MIN"
-
-# echo "####### DEBUG #######"
-# echo "Issue Time = $ISSUE_HOUR:$ISSUE_MIN $ISSUE_AMPM"
-# echo "Warn End Hour = $WARN_END_HOUR"
-# echo "Warn End Minute = $END_MIN"
-# echo "Warn End AMPM = $WARN_END_AMPM"
-# echo "End Time = $END_TIME"
-
-#     # Check if the "Valid to" time is in the past
-#     NOW_TIME=`date '+%T' | tr ":" " " | awk '{ print $1$2 }'`
-# echo "Time Now = $NOW_TIME"
-# echo "#####################"
-#     if [ "$END_TIME" -lt "$NOW_TIME" ] ; then
-#       echo "End hour is before current hour - Obsolete warning!"
-#       NOWARN=TRUE
-#     fi
-
-#     if [ "$NOWARN" != "TRUE" ] ; then
-#       WARNFLAG=TRUE
-#       if [ "$TTS" = "YES" ] ; then
-#         #  Extract the warning text (goes to Festival!)
-#         #
-#         END=`awk '{ if ( $0 ~ "STATE EMERGENCY" || $0 ~ "State Emergency S" || $0 ~ "SES" || $0 ~ "A more general" ) print NR }' $INFILE`
-#         if [ "$TYPE" = "1" ] ; then
-#           awk -v end="$END" '{ if ( $0 ~ "warning is current" || $0 ~ "Issued at" ) { S1 = NR; S2 = end } if ( NR >= S1 && NR <= S2 ) print $0 }' \
-#             $INFILE | grep -v "STATE EMERGENCY" | grep -v "State Emergency" | grep -v "warning is current" | grep -v "Issued at" > $OUTFILE
-#         fi
-#         #
-#         #  Alternate warning text format
-#         if [ "$TYPE" = "2" ] ; then
-#           if ( grep "Severe thunderstorms are likely to produce large hailstones" $INFILE ) ; then
-#             STD_WARN=YES
-#             awk -v end="$END" '{ if ( $0 ~ "over the next several hours" ) { S1 = NR; S2 = end } if ( NR >= S1 && NR <= S2 ) \
-#               print $0 }' $INFILE | grep -v "STATE EMERGENCY" | grep -v "State Emergency" | grep -v "over the next several hours" \
-#               > $OUTFILE
-#           else
-#             STD_WARN=NO
-#             awk -v end="$END" '{ if ( $0 ~ "Issued at" ) { S1 = NR; S2 = end } if ( NR >= S1 && NR <= S2 ) print $0 }' \
-#               $INFILE | grep -v "STATE EMERGENCY" | grep -v "State Emergency" | grep -v "Issued at" | grep -v "A more general" \
-#               > $OUTFILE
-#           fi
-#         fi
-
-#         # Type 3 - Darwin Warnings
-#         if [ "$TYPE" = "3" ] ; then
-#           END=`awk '{ if ( $0 ~ "This warning is also available" ) print NR }' $INFILE`
-#           awk -v end="$END" '{ if ( $0 ~ "CST" ) { S1 = NR; S2 = end } if ( NR >= S1 && NR <= S2 ) print $0 }' \
-#             $INFILE | grep -v "This warning is also available" | grep -v "CST" | grep -v "will be issued no later" > $OUTFILE
-#         fi
-
-#         # Type 4 - Victorian Warnings
-#         if [ "$TYPE" = "4" ] ; then
-#           END=`awk '{ if ( $0 ~ "Warnings are also available" ) print NR }' $INFILE`
-#           awk -v end="$END" '{ if ( $0 ~ "EDT" ) { S1 = NR; S2 = end } if ( NR >= S1 && NR <= S2 ) print $0 }' \
-#             $INFILE | grep -v "SES" | grep -v "Warnings are also available" | grep -v "EDT" | grep -v "due to be issued" \
-#             | grep -v "Issued at" > $OUTFILE
-#         fi
 
 
-#         ##############################################################################
-#         #
-#         # Convert the Text to Speech section
-#         #
-#         $FESTPATH/text2wave $OUTFILE > $OUTWAV
-#         sox $OUTWAV -r 8000 $OUTWAV1.wav
-#       fi
-
-#       #############################################################################
-#       # Output the results
-#       #
-#       echo "" > $STORMLOG
-#       echo "Warning for: "$DISPLIST >> $STORMLOG
-#       echo "Issued at: "$ISSUE_HOUR $ISSUE_MIN $ISSUE_AMPM >> $STORMLOG
-#       if [ "$WARN_END_HOUR" != "" ] && [ "$WARN_END_MIN" != "" ] ; then
-#         echo "Valid until: "$WARN_END_HOUR $WARN_END_MIN $WARN_END_AMPM >> $STORMLOG
-#       fi
-#       echo "" >> $STORMLOG
-#       if [ "$TTS" = "YES" ] ; then cat $OUTFILE >> $STORMLOG; fi
 
 
-#       #############################################################################
-#       # Build the strings of audio files for playing
-#       #
-#       if [ "$X" == "1" ] || [ "$WARN1" == "0" ] ; then
-#         PLAYSTRING1="$STORMAUDIO/klaxon"
-#         WARNING_FILE="$STORMAUDIO/severe_ts"
-#       else
-#         WARNING_FILE="$STORMAUDIO/severe_ts2"
-#       fi
-#       PLAYSTRING1="$PLAYSTRING1 $WARNING_FILE $PLAYLIST \
-#       $STORMAUDIO/issuedat $AUDIO/custom/$ISSUE_HOUR $AUDIO/custom/$ISSUE_MIN $AUDIO/custom/$ISSUE_AMPM"
 
-#       if [ "$STD_WARN" == "YES" ] ; then
-#         PLAYSTRING1="$PLAYSTRING1 $STORMAUDIO/std_warn"
-#       fi
 
-#       cat $STORMLOG
 
-#       if [ "$TTS" = "YES" ] ; then
-#         PLAYSTRING2="$PLAYSTRING1 $OUTWAV1"
-#       else
-#         PLAYSTRING2="$PLAYSTRING1"
-#       fi
 
-#       if [ "$WARN_END_HOUR" != "" ] && [ "$WARN_END_MIN" != "" ] ; then
-#         PLAYSTRING2="$PLAYSTRING2 $STORMAUDIO/nextwarn $AUDIO/custom/$WARN_END_HOUR $AUDIO/custom/$WARN_END_MIN \
-#           $AUDIO/custom/$WARN_END_AMPM"
-#       fi
 
-#       echo `date '+%b %d %Y %T %z'` "Severe Thunderstorm Warning Broadcast" >> $LOGFILE
 
-#       #################################################################################
-#       # Munge the output audio together
-#       #
-#       if [ -f /usr/bin/sox ] ; then
-#         for FILE in $PLAYSTRING2 ; do
-#           if [ ! -f $FILE.ul ] ; then
-#             rm -f $RUN/temp.ul
-#             /usr/bin/sox $FILE.wav $RUN/temp.ul
-#             cat $RUN/temp.ul >> $RUN/wavefile.ul
-#           else
-#             cat $FILE.ul >> $RUN/wavefile.ul
-#           fi
-#         done
-#         /usr/bin/sox $RUN/wavefile.ul -s -u $RUN/wavefile.wav
-#         WAVFILES="$RUN/wavefile.wav"
-#       else
-#         MP3=NO
-#         for FILE in $PLAYSTRING2 ; do
-#           WAVFILES="$WAVFILES $FILE.wav"
-#         done
-#       fi
-#       PLAYSTRING3="$PLAYSTRING3 : $PLAYSTRING2"
-#     fi
-#   fi
-#   cat $INFILE >> $INFILE.tot
-#   let X=$X+1
-#   done
 
-#   if [ "$MP3" == "YES" ] ; then
-#     if [ `/usr/local/bin/lame ; echo $?` == "127" ] ; then
-#       echo "Cannot find lame!"
-#       MP3=NO
-#     else
-#       echo "Converting to MP3"
-#       /usr/local/bin/lame --preset voice -S $RUN/wavefile.wav $RUN/wavefile.mp3
-#     fi
-#   fi
 
 #   #######################################################################
 #   # Initiate the playback

@@ -8,30 +8,40 @@
         <disclaimer>http://www.bom.gov.au/other/disclaimer.shtml</disclaimer>
     </source>
     <identifier>IDN21033</identifier>
-    <issue-time-utc>2023-11-28T06:00:14Z</issue-time-utc>
-    <issue-time-local tz="EDT">2023-11-28T17:00:14+11:00</issue-time-local>
-    <sent-time>2023-11-28T06:00:14Z</sent-time>
-    <expiry-time>2023-11-28T09:00:11Z</expiry-time>
-    <validity-bgn-time-local tz="EDT">2023-11-28T17:00:11+11:00</validity-bgn-time-local>
-    <validity-end-time-local tz="EDT">2023-11-28T20:00:10+11:00</validity-end-time-local>
+    <issue-time-utc>2023-12-02T05:06:07Z</issue-time-utc>
+    <issue-time-local tz="EDT">2023-12-02T16:06:07+11:00</issue-time-local>
+    <sent-time>2023-12-02T05:06:07Z</sent-time>
+    <expiry-time>2023-12-02T08:06:05Z</expiry-time>
+    <validity-bgn-time-local tz="EDT">2023-12-02T16:06:05+11:00</validity-bgn-time-local>
+    <validity-end-time-local tz="EDT">2023-12-02T19:06:04+11:00</validity-end-time-local>
     <status>O</status>
     <service>WSW</service>
     <sub-service>WST</sub-service>
     <product-type>W</product-type>
-    <phase>REN</phase>
-    <hazard index="1" parent-aac="NSW_EV001" phase="REN" type="STW" severity="STD" urgency="UNK" certainty="UNK" start-time-utc="2023-11-28T06:00:11Z" end-time-utc="2023-11-28T09:00:11Z">
+    <phase>UPD</phase>
+    <hazard index="1" parent-aac="NSW_EV001" phase="UPD" type="STW" severity="STD" urgency="UNK" certainty="UNK" start-time-utc="2023-12-02T05:06:05Z" end-time-utc="2023-12-02T08:06:05Z">
         <area-list>
-            <area aac="NSW_PW012" phase="REN" description="Central West Slopes and Plains" type="public-district"/>
-            <area aac="NSW_PW014" phase="REN" description="Riverina" type="public-district"/>
-            <area aac="NSW_PW016" phase="REN" description="Upper Western" type="public-district"/>
-            <area aac="NSW_PW015" phase="REN" description="Lower Western" type="public-district"/>
+            <area aac="NSW_PW006" phase="UPD" description="Illawarra" type="public-district"/>
+            <area aac="NSW_PW007" phase="UPD" description="South Coast" type="public-district"/>
+            <area aac="NSW_PW009" phase="UPD" description="Southern Tablelands" type="public-district"/>
+            <area aac="NSW_PW012" phase="NEW" description="Central West Slopes and Plains" type="public-district"/>
+            <area aac="NSW_PW014" phase="NEW" description="Riverina" type="public-district"/>
+            <area aac="NSW_PW010" phase="NEW" description="Snowy Mountains" type="public-district"/>
+            <area aac="NSW_PW017" phase="NEW" description="Australian Capital Territory" type="public-district"/>
         </area-list>
         <phenomenon-list>
             <phenomenon type="W"/>
-            <phenomenon type="LH"/>
             <phenomenon type="R"/>
+            <phenomenon type="R+"/>
         </phenomenon-list>
         <priority>W</priority>
-        <headline>Severe Thunderstorm Warning for Damaging Winds, Large Hail and Heavy Rainfall for Central West Slopes and Plains, Riverina, Upper Western and Lower Western forecast districts</headline>
+        <headline>Severe Thunderstorm Warning for Damaging Winds, Heavy Rainfall and Intense Rainfall for Illawarra, South Coast, Southern Tablelands, Central West Slopes and Plains, Riverina, Snowy Mountains and Australian Capital Territory forecast districts</headline>
+    </hazard>
+    <hazard index="2" parent-aac="NSW_EV001" phase="CAN" type="STW" severity="CAN" urgency="UNK" certainty="UNK" start-time-utc="2023-12-02T05:06:05Z" end-time-utc="2023-12-02T08:06:05Z">
+        <area-list>
+            <area aac="NSW_PW005" phase="CAN" description="Sydney Metropolitan" type="public-district"/>
+        </area-list>
+        <priority>W</priority>
+        <headline>Cancellation of Severe Thunderstorm Warning for Sydney Metropolitan forecast district</headline>
     </hazard>
 </amoc>
