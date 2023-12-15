@@ -60,7 +60,6 @@ LOCLIST=$CUSTOM/stormcheck_locations.$STATE
 
 ################################################################################################
 #
-X=1
 cp /dev/null $INFILE.tot
 
 # If the node is active only play the warnig areas, not the full TTS output
@@ -76,9 +75,12 @@ fi
 
 # Initialise some of the variables set within the script
 
-TMPDIR=/tmp
+AUDIO=/home/irlp/audio
+
+TMPDIR=.
 NOWARN=TRUE      # We start the script with no warnings.
 STORMLOG=/tmp/stormlog
+WARN_LOOP=0
 # VALIDWARN=NO
 # PLAYSTRING1=""
 # PLAYSTRING2=""
@@ -89,7 +91,7 @@ STORMLOG=/tmp/stormlog
 #   OUTWAV=/tmp/ts_warn.wav
 #   OUTWAV1=/tmp/ts_warn1
 #   FESTPATH=/usr/bin
-#   STORMAUDIO=$AUDIO/custom/stormcheck
+STORMAUDIO=$AUDIO/custom/stormcheck
 
 # if [ "$STATE" == "vk2" ] ; then TYPE=2 ; fi
 # if [ "$STATE" == "vk3" ] ; then TYPE=4 ; fi
@@ -97,25 +99,30 @@ STORMLOG=/tmp/stormlog
 
 for WARNING_FILE in $WARNING_LIST ; do
     unset DISPLIST
+    unset LOC_PLAYLIST
     #  Download the warning pages
-    echo "DEBUG: $WARNING_URL"
-    WARNING_URL=ftp://ftp.bom.gov.au/anon/gen/fwo/$WARNING_FILE.amoc.xml
-    wget -qO $TMPDIR/$WARNING_FILE.amoc.xml $WARNING_URL
-    if [ $? -ne 0 ]; then
-        echo "$WARNING_FILE is not available - no warnings there"
+    WARNING_URL=ftp://ftp.bom.gov.au/anon/gen/fwo
+    WARNING_FILE1=$WARNING_FILE.amoc.xml
+    WARNING_FILE2=$WARNING_FILE.txt
+
+    echo; echo "DEBUG: Processing $WARNING_FILE1"
+    wget -qO $TMPDIR/$WARNING_FILE1 $WARNING_URL/$WARNING_FILE1
+    wget -qO $TMPDIR/$WARNING_FILE2 $WARNING_URL/$WARNING_FILE2
+    if [ $(ls -1 $TMPDIR | grep -c ^$WARNING_FILE1$) -ne 1 ]; then
+        echo "$WARNING_FILE1 is not available - no warnings there"
         continue
-    else
-        # If we have a current warning we clear the NOWARN flag
-        NOWARN=FALSE
-        DISPLIST="$DISPLIST $AREA_DESC"
+    fi
+    if [ $(stat -c %b $TMPDIR/$WARNING_FILE1) -eq 0 ]; then
+        echo "$WARNING_FILE1 is not available - no warnings there"
+        continue
     fi
 
 
     ################################################################################
     # Extract the validity time from the XML
-    START=$(cat $TMPDIR/$WARNING_FILE.amoc.xml | grep validity-bgn-time-local | grep -oP '<v.*>\K.*?(?=</.*)')
-    END=$(cat $TMPDIR/$WARNING_FILE.amoc.xml | grep validity-end-time-local | grep -oP '<v.*>\K.*?(?=</.*)')
-    HEADLINE=$(cat $TMPDIR/$WARNING_FILE.amoc.xml | grep headline | grep -oP '<head.*>\K.*?(?=</.*)' | grep -iv cancel)
+    START=$(cat $TMPDIR/$WARNING_FILE1 | grep validity-bgn-time-local | grep -oP '<v.*>\K.*?(?=</.*)')
+    END=$(cat $TMPDIR/$WARNING_FILE1 | grep validity-end-time-local | grep -oP '<v.*>\K.*?(?=</.*)')
+    HEADLINE=$(cat $TMPDIR/$WARNING_FILE1 | grep headline | grep -oP '<head.*>\K.*?(?=</.*)' | grep -iv cancel)
 
     echo "DEBUG: START = $START"
     echo "DEBUG: END   = $END"
@@ -135,7 +142,7 @@ for WARNING_FILE in $WARNING_LIST ; do
 
     #################################################################################
     # Build an array containing the areas affected by this warning
-    cat $TMPDIR/$WARNING_FILE.amoc.xml | grep 'area aac' > /tmp/areas
+    cat $TMPDIR/$WARNING_FILE1 | grep 'area aac' > /tmp/areas
     WARNCOUNT=0
     while read -r AREA; do
         AREA_AAC=$(echo $AREA | cut -f2 -d\")
@@ -149,7 +156,9 @@ for WARNING_FILE in $WARNING_LIST ; do
             # Check if the active warning areas match our selectors
             if [ $(grep -c ^$AREA_AAC stormcheck_locations.$STATE) -ne 0 ]; then
                 NOWARN=FALSE
+                AREA_FILE=$(echo $AREA_DESC | tr ' ' '_' | tr '/' '_')
                 DISPLIST="$DISPLIST $AREA_DESC"
+                LOC_PLAYLIST="$LOC_PLAYLIST $STORMAUDIO/$AREA_FILE"
             fi
         fi
     done < /tmp/areas
@@ -161,13 +170,14 @@ for WARNING_FILE in $WARNING_LIST ; do
     fi
 
     # Start building out variables to use when building audio playlist
-    ISSUE_HOUR=$(date -d $START +"%l")
+    WARN_LOOP=$(expr $WARN_LOOP + 1)
+    ISSUE_HOUR=$(date -d $START +"%l" | xargs)
     ISSUE_MIN=$(date -d $START +"%M")
-    ISSUE_AMPM=$(date -d $START +"%p")
+    ISSUE_AMPM=$(date -d $START +"%p" | tr '[:upper:]' '[:lower:]')
     #
-    WARN_END_HOUR=$(date -d $END +"%l")
+    WARN_END_HOUR=$(date -d $END +"%l" | xargs)
     WARN_END_MIN=$(date -d $END +"%M")
-    WARN_END_AMPM=$(date -d $END +"%p")
+    WARN_END_AMPM=$(date -d $END +"%p" | tr '[:upper:]' '[:lower:]')
 
     echo "####### DEBUG #######"
     echo "Issue Time = $ISSUE_HOUR:$ISSUE_MIN $ISSUE_AMPM"
@@ -178,8 +188,7 @@ for WARNING_FILE in $WARNING_LIST ; do
 
     # If we want TTS for the entire warning we need to handle that here
     if [ "$TTS" = "YES" ] ; then
-        echo "DEBUG: Download warning text for TTS (TBD)"
-        OUTFILE="Something downloaded here..."
+        echo "DEBUG: Parse $TMPDIR/$WARNING_FILE2 downloaded here..."
     fi
 
 
@@ -200,7 +209,32 @@ for WARNING_FILE in $WARNING_LIST ; do
     echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 
 
+    #############################################################################
+    # Build the strings of audio files for playing
+    #
+    # If this is the first warning in the loop play the initial preambles.
+    if [ "$WARN_LOOP" == "1" ]; then
+        PLAYSTRING="$STORMAUDIO/klaxon"
+        PREAMBLE_FILE="$STORMAUDIO/severe_ts"
+    else
+        PREAMBLE_FILE="$STORMAUDIO/severe_ts2"
+    fi
 
+    # Build out the playlists
+    PLAYSTRING="$PLAYSTRING $PREAMBLE_FILE $LOC_PLAYLIST \
+        $STORMAUDIO/issuedat $AUDIO/custom/$ISSUE_HOUR $AUDIO/custom/$ISSUE_MIN $AUDIO/custom/$ISSUE_AMPM"
+
+    PLAYSTRING2="$PLAYSTRING2 $STORMAUDIO/nextwarn $AUDIO/custom/$WARN_END_HOUR $AUDIO/custom/$WARN_END_MIN \
+        $AUDIO/custom/$WARN_END_AMPM"
+
+    # If the standard generic warning is being used, insert that here
+    if [ "$STD_WARN" == "YES" ] || [ "$TTS" = "NO" ]; then
+        PLAYSTRING="$PLAYSTRING $STORMAUDIO/std_warn $PLAYSTRING2"
+    elif [ "$TTS" = "YES" ]; then
+        PLAYSTRING="$PLAYSTRING $TTS_AUDIO $PLAYSTRING2"
+    else
+        PLAYSTRING="$PLAYSTRING $STORMAUDIO/std_warn $PLAYSTRING2"
+    fi
 
 done
 
@@ -213,17 +247,31 @@ fi
 echo; echo "DEBUG: Continue to process warnings of interest..."
 
 
+echo "DEBUG: $PLAYSTRING"
 
 
-
-
-
-
-
-
-
-
-
+#################################################################################
+# Munge the output audio together
+#
+if [ -f /usr/bin/sox ] ; then
+    rm -f $TMPDIR/wavefile.ul
+    for FILE in $PLAYSTRING ; do
+        if [ ! -f $FILE.ul ] ; then
+            rm -f $TMPDIR/temp.ul
+            /usr/bin/sox $FILE.wav $TMPDIR/temp.ul
+            cat $TMPDIR/temp.ul >> $TMPDIR/wavefile.ul
+        else
+            cat $FILE.ul >> $TMPDIR/wavefile.ul
+        fi
+    done
+    /usr/bin/sox -r 8000 -c 1 $TMPDIR/wavefile.ul $TMPDIR/wavefile.wav
+    WAVFILES="$TMPDIR/wavefile.wav"
+else
+    MP3=NO
+    for FILE in $PLAYSTRING ; do
+        WAVFILES="$WAVFILES $FILE.wav"
+    done
+fi
 
 
 
@@ -278,5 +326,5 @@ echo; echo "DEBUG: Continue to process warnings of interest..."
 
 #   fi
 
-# rm -f $RUN/temp.ul $RUN/wavefile.ul $RUN/wavefile.wav $RUN/wavefile.mp3 $OUTFILE $OUTWAV1.wav $INFILE.tot
-# exit 0
+rm -f $TMPDIR/temp.ul $TMPDIR/wavefile.ul #$TMPDIR/wavefile.wav $TMPDIR/wavefile.mp3 $OUTFILE $OUTWAV1.wav $INFILE.tot
+exit 0

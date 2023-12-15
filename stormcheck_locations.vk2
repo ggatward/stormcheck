@@ -3,10 +3,10 @@
 #
 
 ## State-based public warning areas
-NSW_PW001
+NSW_PW001   Northern Rivers
 NSW_PW002   Mid North Coast
-NSW_PW003
-NSW_PW004
+NSW_PW003   Hunter
+NSW_PW004   Northern Tablelands
 NSW_PW005   Sydney Metropolitan
 NSW_PW006   Illawarra
 NSW_PW007   South Coast
