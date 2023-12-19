@@ -12,3 +12,26 @@ VIC_PW006   West and South Gippsland
 VIC_PW007   Central
 VIC_PW008   North Central
 VIC_PW009   South West
+
+
+## Metro Warning Areas
+VIC_ME001   Melbourne
+VIC_ME002   Geelong and Surf Coast
+VIC_ME003   Mornington Peninsula
+VIC_ME004   Greater Melbourne and Surrounds
+VIC_ME005   Inner
+VIC_ME006   Western
+VIC_ME007   Northern
+VIC_ME008   Eastern
+VIC_ME009   South Eastern
+VIC_ME010   Dandenong Ranges
+VIC_ME011   Geelong and Bellarine Peninsula
+VIC_ME012   Mornington Peninsula
+VIC_ME013   Inner
+VIC_ME014   Western
+VIC_ME015   Northern
+VIC_ME016   Inner East
+VIC_ME017   South East
+VIC_ME018   Outer East
+VIC_ME019   Port Phillip
+VIC_ME020   Western Port
