@@ -22,7 +22,6 @@ NSW_PW016   Upper Western
 NSW_PW017   Australian Capital Territory
 
 
-
 ## Metro Warning Areas
 NSW_ME001
 NSW_ME002
@@ -32,17 +31,18 @@ NSW_ME005
 NSW_ME006
 NSW_ME007
 NSW_ME008
-NSW_ME009
+NSW_ME009   Greater Canberra and Surrounds
 NSW_ME010
 NSW_ME011
 NSW_ME012
 NSW_ME013   Woolondilly/Wingecarribee
 NSW_ME014
-NSW_ME015
+NSW_ME015   Maitland/Cessnock
 NSW_ME016
 NSW_ME017   Sydney
 NSW_ME018   Wollongong
-
+NSW_ME019
+NSW_ME020   Newcastle
 
 ## Not actually sure what this one is, it's popped up in some warnings.
 #NSW_SP001   New South Wales Anonymous Locale 1

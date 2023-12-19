@@ -30,30 +30,33 @@
 #if [ -f $LOCAL/active ] ; then exit 0 ; fi
 
 ################################################################################################
-#
-# Email address for DEBUG messages
-EMAIL="geoff@server"
-
-################################################################################################
 
 if [ "$1" == "" ] ; then echo "You must define the state for this warning!" ; exit 0 ; fi
 if [ "$2" == "test" ] ; then TEST=yes ; fi
 MP3=`echo "$@" | awk '{ if ( $0 ~/mp3/ ) print "YES" }'`
 
+# Read in command-line args
 STATE=$1
+FLAG2=$2
 
-echo "DEBUG: MP3="$MP3
-echo "DEBUG: STATE="$STATE
+if [ "$FLAG2" == "debug" ]; then DEBUG=true; else DEBUG=false; fi
 
-#if [ "$STATE" == "vk2" ] ; then WARNING_LIST="ts_warning-new1.txt ts_warning-new2.txt" ; fi
-#if [ "$STATE" == "vk1" ] ; then WARNING_LIST="ts_warning-new2.txt ts_warning-new1.txt" ; STATE=vk2 ; fi
+if [ "$DEBUG" = true ]; then
+    echo "DEBUG: MP3="$MP3
+    echo "DEBUG: STATE="$STATE
+fi
+
 #if [ "$STATE" == "vk8" ] ; then WARNING_LIST="ts_warning3.txt" ; fi
 #if [ "$STATE" == "vk3" ] ; then WARNING_LIST="ts_warning-vicmet.txt ts_warning-vicrur.txt" ; fi
 #if [ "$STATE" == "vk2" ] ; then WARNING_LIST="IDN25900.txt IDN28300.txt" ; fi
+if [ "$STATE" == "vk1" ] ; then WARNING_LIST="IDN21033 IDN21036" ; STATE=vk2 ; fi
 if [ "$STATE" == "vk2" ] ; then WARNING_LIST="IDN21033 IDN21035 IDN21036" ; fi
-if [ "$STATE" == "vk1" ] ; then WARNING_LIST="IDN21036 IDN25900" ; STATE=vk2 ; fi
-if [ "$STATE" == "vk8" ] ; then WARNING_LIST="IDDP0005" ; fi
-if [ "$STATE" == "vk3" ] ; then WARNING_LIST="IDV65756 IDV26400" ; fi
+if [ "$STATE" == "vk3" ] ; then WARNING_LIST="IDV21033 IDV21035" ; fi
+if [ "$STATE" == "vk4" ] ; then WARNING_LIST="IDQ21033 IDQ21035" ; fi
+if [ "$STATE" == "vk5" ] ; then WARNING_LIST="IDS21033 IDS21035" ; fi
+if [ "$STATE" == "vk6" ] ; then WARNING_LIST="IDW21033 IDW21034 IDW21035" ; fi
+if [ "$STATE" == "vk7" ] ; then WARNING_LIST="IDT21033 IDT21035" ; fi
+if [ "$STATE" == "vk8" ] ; then WARNING_LIST="IDD21033 IDD21034 IDD21035" ; fi
 
 CUSTOM=$(pwd)
 LOCLIST=$CUSTOM/stormcheck_locations.$STATE
@@ -105,15 +108,15 @@ for WARNING_FILE in $WARNING_LIST ; do
     WARNING_FILE1=$WARNING_FILE.amoc.xml
     WARNING_FILE2=$WARNING_FILE.txt
 
-    echo; echo "DEBUG: Processing $WARNING_FILE1"
+    if [ "$DEBUG" = true ]; then echo; echo "DEBUG: Processing $WARNING_FILE1"; fi
     wget -qO $TMPDIR/$WARNING_FILE1 $WARNING_URL/$WARNING_FILE1
     wget -qO $TMPDIR/$WARNING_FILE2 $WARNING_URL/$WARNING_FILE2
     if [ $(ls -1 $TMPDIR | grep -c ^$WARNING_FILE1$) -ne 1 ]; then
-        echo "$WARNING_FILE1 is not available - no warnings there"
+        if [ "$DEBUG" = true ]; then echo "DEBUG: $WARNING_FILE1 is not available - no warnings there"; fi
         continue
     fi
     if [ $(stat -c %b $TMPDIR/$WARNING_FILE1) -eq 0 ]; then
-        echo "$WARNING_FILE1 is not available - no warnings there"
+        if [ "$DEBUG" = true ]; then echo "DEBUG: $WARNING_FILE1 is not available - no warnings there"; fi
         continue
     fi
 
@@ -124,19 +127,21 @@ for WARNING_FILE in $WARNING_LIST ; do
     END=$(cat $TMPDIR/$WARNING_FILE1 | grep validity-end-time-local | grep -oP '<v.*>\K.*?(?=</.*)')
     HEADLINE=$(cat $TMPDIR/$WARNING_FILE1 | grep headline | grep -oP '<head.*>\K.*?(?=</.*)' | grep -iv cancel)
 
-    echo "DEBUG: START = $START"
-    echo "DEBUG: END   = $END"
-    echo "DEBUG: HEADLINE = $HEADLINE"
+    if [ "$DEBUG" = true ]; then
+        echo "DEBUG: START = $START"
+        echo "DEBUG: END   = $END"
+        echo "DEBUG: HEADLINE = $HEADLINE"
+    fi
 
     # Does the current time fall within the validity window?
     # Convert timestamps from ISO-8601 format to Epoch to compare numerically with the current time
     StartEpoch=$(date -d $START +"%s")
     EndEpoch=$(date -d $END +"%s")
     if [ $(date +"%s") -gt $StartEpoch ] && [ $(date +"%s") -lt $EndEpoch ]; then
-        echo "DEBUG: Current time is inside warning validity period"
+        if [ "$DEBUG" = true ]; then echo "DEBUG: Current time is inside warning validity period"; fi
     else
         # Current time is outside warning validity - skip and process the next item
-        echo "DEBUG: Current time is outside warning validity period"
+        if [ "$DEBUG" = true ]; then echo "DEBUG: Current time is outside warning validity period"; fi
         continue
     fi
 
@@ -148,24 +153,27 @@ for WARNING_FILE in $WARNING_LIST ; do
         AREA_AAC=$(echo $AREA | cut -f2 -d\")
         AREA_PHASE=$(echo $AREA | cut -f4 -d\")
         AREA_DESC=$(echo $AREA | cut -f6 -d\")
-        if [ "$AREA_PHASE" == "CAN" ]; then
-            echo "DEBUG: Warning cancelled for "$AREA_AAC" ("$AREA_DESC")"
-        else
-            echo "DEBUG: Warning current for "$AREA_AAC" ("$AREA_DESC")"
-            WARNCOUNT=$(expr $WARNCOUNT + 1)
-            # Check if the active warning areas match our selectors
-            if [ $(grep -c ^$AREA_AAC stormcheck_locations.$STATE) -ne 0 ]; then
-                NOWARN=FALSE
-                AREA_FILE=$(echo $AREA_DESC | tr ' ' '_' | tr '/' '_')
-                DISPLIST="$DISPLIST $AREA_DESC"
-                LOC_PLAYLIST="$LOC_PLAYLIST $STORMAUDIO/$AREA_FILE"
+        # Ignore bogus areas
+        if [ "$AREA_AAC" != "NSW_SP001" ]; then
+            if [ "$AREA_PHASE" == "CAN" ]; then
+                if [ "$DEBUG" = true ]; then echo "DEBUG: Warning cancelled for "$AREA_AAC" ("$AREA_DESC")"; fi
+            else
+                if [ "$DEBUG" = true ]; then echo "DEBUG: Warning current for "$AREA_AAC" ("$AREA_DESC")"; fi
+                WARNCOUNT=$(expr $WARNCOUNT + 1)
+                # Check if the active warning areas match our selectors
+                if [ $(grep -c ^$AREA_AAC stormcheck_locations.$STATE) -ne 0 ]; then
+                    NOWARN=FALSE
+                    AREA_FILE=$(echo $AREA_DESC | tr ' ' '_' | tr '/' '_')
+                    DISPLIST="$DISPLIST $AREA_DESC"
+                    LOC_PLAYLIST="$LOC_PLAYLIST $STORMAUDIO/$AREA_FILE"
+                fi
             fi
         fi
     done < /tmp/areas
 
     # If we haven't found a warning of interest to us, skip to the next input file.
     if [ $WARNCOUNT -eq 0 ]; then
-        echo "No warnings of interest"
+        if [ "$DEBUG" = true ]; then echo "No warnings of interest"; fi
         continue
     fi
 
@@ -179,16 +187,18 @@ for WARNING_FILE in $WARNING_LIST ; do
     WARN_END_MIN=$(date -d $END +"%M")
     WARN_END_AMPM=$(date -d $END +"%p" | tr '[:upper:]' '[:lower:]')
 
-    echo "####### DEBUG #######"
-    echo "Issue Time = $ISSUE_HOUR:$ISSUE_MIN $ISSUE_AMPM"
-    echo "Warn End Hour = $WARN_END_HOUR"
-    echo "Warn End Minute = $WARN_END_MIN"
-    echo "Warn End AMPM = $WARN_END_AMPM"
-
+    if [ "$DEBUG" = true ]; then
+        echo "####### DEBUG #######"
+        echo "Issue Time = $ISSUE_HOUR:$ISSUE_MIN $ISSUE_AMPM"
+        echo "Warn End Hour = $WARN_END_HOUR"
+        echo "Warn End Minute = $WARN_END_MIN"
+        echo "Warn End AMPM = $WARN_END_AMPM"
+    fi
 
     # If we want TTS for the entire warning we need to handle that here
     if [ "$TTS" = "YES" ] ; then
         echo "DEBUG: Parse $TMPDIR/$WARNING_FILE2 downloaded here..."
+        # generates TTS_AUDIO
     fi
 
 
@@ -204,10 +214,11 @@ for WARNING_FILE in $WARNING_LIST ; do
     echo "" >> $STORMLOG
     if [ "$TTS" = "YES" ] ; then cat $OUTFILE >> $STORMLOG; fi
 
-    echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    cat $STORMLOG
-    echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-
+    if [ "$DEBUG" = true ]; then
+        echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+        cat $STORMLOG
+        echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+    fi
 
     #############################################################################
     # Build the strings of audio files for playing
@@ -224,7 +235,7 @@ for WARNING_FILE in $WARNING_LIST ; do
     PLAYSTRING="$PLAYSTRING $PREAMBLE_FILE $LOC_PLAYLIST \
         $STORMAUDIO/issuedat $AUDIO/custom/$ISSUE_HOUR $AUDIO/custom/$ISSUE_MIN $AUDIO/custom/$ISSUE_AMPM"
 
-    PLAYSTRING2="$PLAYSTRING2 $STORMAUDIO/nextwarn $AUDIO/custom/$WARN_END_HOUR $AUDIO/custom/$WARN_END_MIN \
+    PLAYSTRING2="$STORMAUDIO/nextwarn $AUDIO/custom/$WARN_END_HOUR $AUDIO/custom/$WARN_END_MIN \
         $AUDIO/custom/$WARN_END_AMPM"
 
     # If the standard generic warning is being used, insert that here
@@ -240,14 +251,11 @@ done
 
 # Decide if we need to continue
 if [ "$NOWARN" == "TRUE" ]; then
-    echo "DEBUG: No warnings of interest - exiting"
+    if [ "$DEBUG" = true ]; then echo "DEBUG: No warnings of interest - exiting"; fi
     exit 0
 fi
 
-echo; echo "DEBUG: Continue to process warnings of interest..."
-
-
-echo "DEBUG: $PLAYSTRING"
+if [ "$DEBUG" = true ]; then echo "DEBUG: $PLAYSTRING"; fi
 
 
 #################################################################################
@@ -273,58 +281,54 @@ else
     done
 fi
 
+#######################################################################
+# Initiate the playback
+#
+if [ "$NOWARN" != "TRUE" ] ; then
+    ######## Just here to play locally without a node :-)  ########
+    play $WAVFILES
+    ################
+    if [ "$DEBUG" = false ]; then
+        if [ -f $LOCAL/active ] ; then
+            killall -9 ispeaker >&/dev/null 2>&1
+            killall -9 ispeaker_PCI >&/dev/null 2>&1
+            killall -9 sfswrapper >&/dev/null 2>&1
+        fi
 
+        $BIN/coscheck
+        $BIN/coscheck
+        $BIN/coscheck
+        $BIN/coscheck
+        $BIN/coscheck
+        $BIN/coscheck
+        $BIN/coscheck
+        $BIN/coscheck
+        $BIN/coscheck
+        $BIN/coscheck
+        $BIN/forcekey
+        sleep 2
+        if [ "$MP3" == "YES" ] ; then
+            mpg123 $RUN/wavefile.mp3
+            sleep 5
+        else
+            $BIN/play $WAVFILES >/dev/null 2>&1
+            sleep 2
+        fi
+        $BIN/forceunkey
 
-#   #######################################################################
-#   # Initiate the playback
-#   #
-#   if [ "$WARNFLAG" == "TRUE" ] ; then
-#     if [ "$TEST" != "yes" ] ; then
-#       if [ -f $LOCAL/active ] ; then
-#         killall -9 ispeaker >&/dev/null 2>&1
-#         killall -9 ispeaker_PCI >&/dev/null 2>&1
-#         killall -9 sfswrapper >&/dev/null 2>&1
-#       fi
+        if [ -f $LOCAL/active ] ; then "$SCRIPT"/sfswrapper ; fi
+    fi
 
-#       $BIN/coscheck
-#       $BIN/coscheck
-#       $BIN/coscheck
-#       $BIN/coscheck
-#       $BIN/coscheck
-#       $BIN/coscheck
-#       $BIN/coscheck
-#       $BIN/coscheck
-#       $BIN/coscheck
-#       $BIN/coscheck
-#       $BIN/forcekey
-#       sleep 2
-#       if [ "$MP3" == "YES" ] ; then
-#         mpg123 $RUN/wavefile.mp3
-#         sleep 5
-#       else
-#         $BIN/play $WAVFILES >/dev/null 2>&1
-#         sleep 2
-#       fi
-#       $BIN/forceunkey
+    # # For DEBUG:
+    # cp -f $RUN/wavefile.wav /home/irlp/tmp
+    # cp -f $RUN/wavefile.mp3 /home/irlp/tmp
+    # if [ "$MP3" == "YES" ] ; then
+    #   echo "Thunderstorm Warning" | mutt -s "$STATE Severe Thunderstorm Warning" -i $INFILE.tot -a $RUN/wavefile.mp3 -c $EMAIL
+    # else
+    #   echo "Thunderstorm Warning" | mutt -s "$STATE Severe Thunderstorm Warning" -i $INFILE.tot -a $WAVFILES -c $EMAIL
+    # fi
 
-#       if [ -f $LOCAL/active ] ; then "$SCRIPT"/sfswrapper ; fi
-
-#     else
-#       # If we are in test mode print the file list to be played
-#       echo $PLAYSTRING3
-#       echo ""
-#       echo "--------------------------------------------------------------------------"
-#     fi
-# # For DEBUG:
-# cp -f $RUN/wavefile.wav /home/irlp/tmp
-# cp -f $RUN/wavefile.mp3 /home/irlp/tmp
-# if [ "$MP3" == "YES" ] ; then
-#   echo "Thunderstorm Warning" | mutt -s "$STATE Severe Thunderstorm Warning" -i $INFILE.tot -a $RUN/wavefile.mp3 -c $EMAIL
-# else
-#   echo "Thunderstorm Warning" | mutt -s "$STATE Severe Thunderstorm Warning" -i $INFILE.tot -a $WAVFILES -c $EMAIL
-# fi
-
-#   fi
+fi
 
 rm -f $TMPDIR/temp.ul $TMPDIR/wavefile.ul #$TMPDIR/wavefile.wav $TMPDIR/wavefile.mp3 $OUTFILE $OUTWAV1.wav $INFILE.tot
 exit 0

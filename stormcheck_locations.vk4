@@ -1,0 +1,18 @@
+#
+# Place_a_hash_in_front_of_locations_that_are_not_required
+#
+
+## State-based public warning areas
+QLD_PW001
+QLD_PW002
+QLD_PW003
+QLD_PW004
+QLD_PW005
+QLD_PW006
+QLD_PW007
+QLD_PW008
+QLD_PW009   Central West
+QLD_PW010   North West
+QLD_PW011   Channel Country
+QLD_PW012   Maranoa and Warrego
+QLD_PW013   Darling Downs and Granite Belt

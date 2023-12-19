@@ -8,29 +8,23 @@
         <disclaimer>http://www.bom.gov.au/other/disclaimer.shtml</disclaimer>
     </source>
     <identifier>IDN21035</identifier>
-    <issue-time-utc>2023-12-02T07:45:29Z</issue-time-utc>
-    <issue-time-local tz="EDT">2023-12-02T18:45:29+11:00</issue-time-local>
-    <sent-time>2023-12-02T07:45:29Z</sent-time>
-    <expiry-time>2023-12-02T08:45:22Z</expiry-time>
-    <validity-bgn-time-local tz="EDT">2023-12-02T18:45:22+11:00</validity-bgn-time-local>
-    <validity-end-time-local tz="EDT">2023-12-02T19:45:21+11:00</validity-end-time-local>
+    <issue-time-utc>2023-12-19T05:24:50Z</issue-time-utc>
+    <issue-time-local tz="EDT">2023-12-19T16:24:50+11:00</issue-time-local>
+    <sent-time>2023-12-19T05:24:50Z</sent-time>
+    <expiry-time>2023-12-19T06:24:45Z</expiry-time>
+    <validity-bgn-time-local tz="EDT">2023-12-19T16:24:45+11:00</validity-bgn-time-local>
+    <validity-end-time-local tz="EDT">2023-12-19T17:24:44+11:00</validity-end-time-local>
     <status>O</status>
     <service>WSW</service>
     <sub-service>WST</sub-service>
     <product-type>W</product-type>
-    <phase>NEW</phase>
-    <hazard index="1" parent-aac="NSW_ME008" phase="NEW" type="STW" severity="STD" urgency="UNK" certainty="UNK" start-time-utc="2023-12-02T07:45:22Z" end-time-utc="2023-12-02T08:45:22Z">
+    <phase>CAN</phase>
+    <hazard index="1" parent-aac="NSW_ME008" phase="CAN" type="STW" severity="CAN" urgency="UNK" certainty="UNK" start-time-utc="2023-12-19T05:24:45Z" end-time-utc="2023-12-19T06:24:45Z">
         <area-list>
-            <area aac="NSW_ME013" phase="NEW" description="Woolondilly/Wingecarribee" type="metropolitan"/>
-            <area aac="NSW_ME017" phase="NEW" description="Sydney" type="metropolitan"/>
-            <area aac="NSW_ME018" phase="NEW" description="Wollongong" type="metropolitan"/>
+            <area aac="NSW_ME015" phase="CAN" description="Maitland/Cessnock" type="metropolitan"/>
+            <area aac="NSW_ME020" phase="CAN" description="Newcastle" type="metropolitan"/>
         </area-list>
-        <phenomenon-list>
-            <phenomenon type="W"/>
-            <phenomenon type="LH"/>
-            <phenomenon type="R"/>
-        </phenomenon-list>
         <priority>W</priority>
-        <headline>Severe Thunderstorm Warning for Damaging Winds, Large Hail and Heavy Rainfall for Woolondilly/Wingecarribee, Sydney and Wollongong</headline>
+        <headline>Cancellation of Severe Thunderstorm Warning for Maitland/Cessnock and Newcastle</headline>
     </hazard>
 </amoc>
