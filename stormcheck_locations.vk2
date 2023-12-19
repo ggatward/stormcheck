@@ -23,23 +23,23 @@ NSW_PW017   Australian Capital Territory
 
 
 ## Metro Warning Areas
-NSW_ME001
-NSW_ME002
-NSW_ME003
-NSW_ME004
-NSW_ME005
-NSW_ME006
-NSW_ME007
-NSW_ME008
+NSW_ME001   Sydney
+NSW_ME002   Blue Mountains
+NSW_ME003   Wollongong
+NSW_ME004   Central Coast
+NSW_ME005   Newcastle
+NSW_ME006   Canberra
+NSW_ME007   Alpine
+NSW_ME008   Greater Sydney and Surrounds
 NSW_ME009   Greater Canberra and Surrounds
-NSW_ME010
-NSW_ME011
-NSW_ME012
+NSW_ME010   Canberra Area
+NSW_ME011   Eastern
+NSW_ME012   Western
 NSW_ME013   Woolondilly/Wingecarribee
-NSW_ME014
+NSW_ME014   Blue Mountains/Hawkesbury
 NSW_ME015   Maitland/Cessnock
 NSW_ME016
 NSW_ME017   Sydney
-NSW_ME018   Wollongong
-NSW_ME019
-NSW_ME020   Newcastle
+NSW_ME018   Greater Wollongong
+NSW_ME019   Hunter
+NSW_ME020   Greater Newcastle
