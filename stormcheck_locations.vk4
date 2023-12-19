@@ -3,16 +3,18 @@
 #
 
 ## State-based public warning areas
-QLD_PW001
-QLD_PW002
-QLD_PW003
-QLD_PW004
-QLD_PW005
-QLD_PW006
-QLD_PW007
-QLD_PW008
+QLD_PW001   Peninsula
+QLD_PW002   Gulf Country
+QLD_PW003   Northern Goldfields and Upper Flinders
+QLD_PW004   North Tropical Coast and Tablelands
+QLD_PW005   Herbert and Lower Burdekin
+QLD_PW006   Central Coast and Whitsundays
+QLD_PW007   Capricornia
+QLD_PW008   Central Highlands and Coalfields
 QLD_PW009   Central West
 QLD_PW010   North West
 QLD_PW011   Channel Country
 QLD_PW012   Maranoa and Warrego
 QLD_PW013   Darling Downs and Granite Belt
+QLD_PW014   Wide Bay and Burnett
+QLD_PW015   Southeast Coast

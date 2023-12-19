@@ -8,6 +8,11 @@
 # v0.9 - 13-Dec-04 - Error corrections
 # v1.0 - 20-Jan-05 - Found a fix for the VK2 graphical warning problem
 #
+
+# GIS Datasets at:
+# ftp://ftp.bom.gov.au/anon/home/adfd/spatial/
+
+
 #######################################################################
 #
 # Make sure we are user repeater!!!
@@ -46,9 +51,7 @@ if [ "$DEBUG" = true ]; then
     echo "DEBUG: STATE="$STATE
 fi
 
-#if [ "$STATE" == "vk8" ] ; then WARNING_LIST="ts_warning3.txt" ; fi
-#if [ "$STATE" == "vk3" ] ; then WARNING_LIST="ts_warning-vicmet.txt ts_warning-vicrur.txt" ; fi
-#if [ "$STATE" == "vk2" ] ; then WARNING_LIST="IDN25900.txt IDN28300.txt" ; fi
+# Define the warning files to download
 if [ "$STATE" == "vk1" ] ; then WARNING_LIST="IDN21033 IDN21036" ; STATE=vk2 ; fi
 if [ "$STATE" == "vk2" ] ; then WARNING_LIST="IDN21033 IDN21035 IDN21036" ; fi
 if [ "$STATE" == "vk3" ] ; then WARNING_LIST="IDV21033 IDV21035" ; fi

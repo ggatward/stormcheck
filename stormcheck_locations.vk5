@@ -1,0 +1,20 @@
+#
+# Place_a_hash_in_front_of_locations_that_are_not_required
+#
+
+## State-based public warning areas
+SA_PW001   Adelaide Metropolitan
+SA_PW002    Yorke Peninsula
+SA_PW003    Kangaroo Island
+SA_PW004    Upper South East
+SA_PW005    Lower South East
+SA_PW006    Riverland
+SA_PW007    Murraylands
+SA_PW008    Mid North
+SA_PW009    Flinders
+SA_PW010    West Coast
+SA_PW011    Eastern Eyre Peninsula
+SA_PW012    Lower Eyre Peninsula
+SA_PW013    North West Pastoral
+SA_PW014    North East Pastoral
+SA_PW015    Mount Lofty Ranges

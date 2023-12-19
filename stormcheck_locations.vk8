@@ -2,16 +2,13 @@
 # Place_a_hash_in_front_of_locations_that_are_not_required
 #
 
-## State-based public warning areasManton_Dam
-Acacia_Hills
-Darwin_River
-Berry_Springs
-Noonamah
-Fogg_Dam
-Humpty_Doo
-Howard_Springs
-Palmerston
-Darwin
-Cox_Peninsula
-Bynoe_Harbour
-Dundee_Beach
+## State-based public warning areas
+NT_PW001    Daly
+NT_PW002    Tiwi
+NT_PW003    Arnhem
+NT_PW004    Carpentaria
+NT_PW005    Gregory
+NT_PW006    Barkly
+NT_PW007    Simpson
+NT_PW008    Lasseter
+NT_PW009    Tanami

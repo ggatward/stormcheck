@@ -3,15 +3,12 @@
 #
 
 ## State-based public warning areas
-Melbourne_Metropolitan
-Mallee
-Wimmera
-Northern_Country
-North_Central
-Northeast
-Alpine
-#Western
-Central
-West_Gippsland
-South_Gippsland
-East_Gippsland
+VIC_PW001   Mallee
+VIC_PW002   Wimmera
+VIC_PW003   Northern Country
+VIC_PW004   North East
+VIC_PW005   East Gippsland
+VIC_PW006   West and South Gippsland
+VIC_PW007   Central
+VIC_PW008   North Central
+VIC_PW009   South West
