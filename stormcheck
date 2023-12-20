@@ -157,7 +157,7 @@ for WARNING_FILE in $WARNING_LIST ; do
                 # Check if the active warning areas match our selectors
                 if [ $(grep -c ^$AREA_AAC stormcheck_locations.$STATE) -ne 0 ]; then
                     NOWARN=FALSE
-                    AREA_FILE=$(echo $AREA_DESC | tr ' ' '_' | tr '/' '_')
+                    AREA_FILE=$(echo $AREA_DESC | tr ' ' '_' | tr '/' '_' | tr '-' '_')
                     DISPLIST="$DISPLIST $AREA_DESC"
                     LOC_PLAYLIST="$LOC_PLAYLIST $STORMAUDIO/$AREA_FILE"
                 fi
