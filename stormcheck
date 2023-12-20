@@ -37,17 +37,12 @@
 ################################################################################################
 
 if [ "$1" == "" ] ; then echo "You must define the state for this warning!" ; exit 0 ; fi
-if [ "$2" == "test" ] ; then TEST=yes ; fi
-MP3=`echo "$@" | awk '{ if ( $0 ~/mp3/ ) print "YES" }'`
 
 # Read in command-line args
 STATE=$1
-FLAG2=$2
-
-if [ "$FLAG2" == "debug" ]; then DEBUG=true; else DEBUG=false; fi
+if [ "$2" == "debug" ] ; then DEBUG=true; else DEBUG=false; fi
 
 if [ "$DEBUG" = true ]; then
-    echo "DEBUG: MP3="$MP3
     echo "DEBUG: STATE="$STATE
 fi
 
@@ -66,7 +61,6 @@ LOCLIST=$CUSTOM/stormcheck_locations.$STATE
 
 ################################################################################################
 #
-cp /dev/null $INFILE.tot
 
 # If the node is active only play the warnig areas, not the full TTS output
 TTS=YES
@@ -82,10 +76,11 @@ fi
 # Initialise some of the variables set within the script
 
 AUDIO=/home/irlp/audio
-
-TMPDIR=.
+STORMAUDIO=$AUDIO/custom/stormcheck
+TMPDIR=/tmp
 NOWARN=TRUE      # We start the script with no warnings.
 STORMLOG=/tmp/stormlog
+
 WARN_LOOP=0
 # VALIDWARN=NO
 # PLAYSTRING1=""
@@ -97,11 +92,7 @@ WARN_LOOP=0
 #   OUTWAV=/tmp/ts_warn.wav
 #   OUTWAV1=/tmp/ts_warn1
 #   FESTPATH=/usr/bin
-STORMAUDIO=$AUDIO/custom/stormcheck
 
-# if [ "$STATE" == "vk2" ] ; then TYPE=2 ; fi
-# if [ "$STATE" == "vk3" ] ; then TYPE=4 ; fi
-# if [ "$STATE" == "vk8" ] ; then TYPE=3 ; fi
 
 for WARNING_FILE in $WARNING_LIST ; do
     unset DISPLIST
@@ -255,6 +246,7 @@ done
 # Decide if we need to continue
 if [ "$NOWARN" == "TRUE" ]; then
     if [ "$DEBUG" = true ]; then echo "DEBUG: No warnings of interest - exiting"; fi
+    rm -f $TMPDIR/*.xml
     exit 0
 fi
 
@@ -278,7 +270,6 @@ if [ -f /usr/bin/sox ] ; then
     /usr/bin/sox -r 8000 -c 1 $TMPDIR/wavefile.ul $TMPDIR/wavefile.wav
     WAVFILES="$TMPDIR/wavefile.wav"
 else
-    MP3=NO
     for FILE in $PLAYSTRING ; do
         WAVFILES="$WAVFILES $FILE.wav"
     done
@@ -310,28 +301,13 @@ if [ "$NOWARN" != "TRUE" ] ; then
         $BIN/coscheck
         $BIN/forcekey
         sleep 2
-        if [ "$MP3" == "YES" ] ; then
-            mpg123 $RUN/wavefile.mp3
-            sleep 5
-        else
-            $BIN/play $WAVFILES >/dev/null 2>&1
-            sleep 2
-        fi
+        $BIN/play $WAVFILES >/dev/null 2>&1
+        sleep 2
         $BIN/forceunkey
 
         if [ -f $LOCAL/active ] ; then "$SCRIPT"/sfswrapper ; fi
     fi
-
-    # # For DEBUG:
-    # cp -f $RUN/wavefile.wav /home/irlp/tmp
-    # cp -f $RUN/wavefile.mp3 /home/irlp/tmp
-    # if [ "$MP3" == "YES" ] ; then
-    #   echo "Thunderstorm Warning" | mutt -s "$STATE Severe Thunderstorm Warning" -i $INFILE.tot -a $RUN/wavefile.mp3 -c $EMAIL
-    # else
-    #   echo "Thunderstorm Warning" | mutt -s "$STATE Severe Thunderstorm Warning" -i $INFILE.tot -a $WAVFILES -c $EMAIL
-    # fi
-
 fi
 
-rm -f $TMPDIR/temp.ul $TMPDIR/wavefile.ul #$TMPDIR/wavefile.wav $TMPDIR/wavefile.mp3 $OUTFILE $OUTWAV1.wav $INFILE.tot
+rm -f $TMPDIR/temp.ul $TMPDIR/wavefile.ul $TMPDIR/wavefile.wav $OUTFILE $OUTWAV1.wav $TMPDIR/*.xml
 exit 0
