@@ -287,8 +287,8 @@ fi
 # Initiate the playback
 #
 if [ "$NOWARN" != "TRUE" ] ; then
-    if [ "NO_TX" = true ]; then
-        if [ "PLAY_LOCAL" = true ]; then
+    if [ "$NO_TX" = true ]; then
+        if [ "$PLAY_LOCAL" = true ]; then
             play $WAVFILES
         fi
     fi
