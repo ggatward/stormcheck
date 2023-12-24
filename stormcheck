@@ -8,46 +8,52 @@
 # v0.9 - 13-Dec-04 - Error corrections
 # v1.0 - 20-Jan-05 - Found a fix for the VK2 graphical warning problem
 #
-
-# GIS Datasets at:
-# ftp://ftp.bom.gov.au/anon/home/adfd/spatial/
+# v3.0 - 26-Dec-23 - Major rewrite and code review to use BOM AMOC XML, after years of, well...
+#
 
 
 #######################################################################
 #
-# Make sure we are user repeater!!!
-#if [ `/usr/bin/whoami` != "repeater" ] ; then
-#  echo This program must be run as user REPEATER!
-#  exit 1
-#fi
-
-#. /home/irlp/custom/environment
-
-# Make sure we have sourced the environment file
-#if [ "$RUN_ENV" != "TRUE" ] ; then
-#  echo "You must source the environment file first. Do this by running:"
-#  echo ". /home/irlp/custom/environment"
-#  exit 1
-#fi
-
-
-#if [ ! -f $LOCAL/enable ] ; then exit 0 ; fi
-#if [ -f $LOCAL/active ] ; then exit 0 ; fi
-
-################################################################################################
+# Read in command-line args
 
 if [ "$1" == "" ] ; then echo "You must define the state for this warning!" ; exit 0 ; fi
-
-# Read in command-line args
 STATE=$1
-if [ "$2" == "debug" ] ; then DEBUG=true; else DEBUG=false; fi
 
-NO_TX=true
+if [ $(echo $@ | grep -c '\-debug') -eq 1 ]; then DEBUG=true; else DEBUG=false; fi
+if [ $(echo $@ | grep -c '\-notx') -eq 1 ]; then NO_TX=true; else NO_TX=false; fi
+if [ $(echo $@ | grep -c '\-local') -eq 1 ]; then PLAY_LOCAL=true; else PLAY_LOCAL=false; fi
+if [ $(echo $@ | grep -c '\-tts') -eq 1 ]; then TTS=true; else TTS=false; fi
+
+# Hard-code TTS to false for now
+TTS=false
 
 if [ "$DEBUG" = true ]; then
     echo "DEBUG: STATE="$STATE
 fi
 
+#######################################################################
+#
+if [ "$DEBUG" = false ]; then
+    # Make sure we are user repeater!!!
+    if [ `/usr/bin/whoami` != "repeater" ] ; then
+        echo This program must be run as user REPEATER!
+        exit 1
+    fi
+
+    . /home/irlp/custom/environment
+
+    # Make sure we have sourced the environment file
+    if [ "$RUN_ENV" != "TRUE" ] ; then
+        echo "You must source the environment file first. Do this by running:"
+        echo ". /home/irlp/custom/environment"
+        exit 1
+    fi
+
+    if [ ! -f $LOCAL/enable ] ; then exit 0 ; fi
+    if [ -f $LOCAL/active ] ; then exit 0 ; fi
+fi
+
+################################################################################################
 # Define the warning files to download
 if [ "$STATE" == "vk1" ] ; then WARNING_LIST="IDN21033 IDN21036" ; STATE=vk2 ; fi
 if [ "$STATE" == "vk2" ] ; then WARNING_LIST="IDN21033 IDN21035 IDN21036" ; fi
@@ -64,14 +70,15 @@ LOCLIST=$CUSTOM/stormcheck_locations.$STATE
 ################################################################################################
 #
 
-# If the node is active only play the warnig areas, not the full TTS output
-TTS=YES
+# If the node is active only play the warning areas, not the full TTS output
 if [ -f $LOCAL/active ] ; then
-    TTS=NO
+    TTS=false
 fi
-if [ ! -f $FESTPATH/text2wave ] ; then
-    TTS=NO
-    echo "Festival is not installed, or not installed correctly - TTS will not be done"
+if [ "$TTS" = true ]; then
+    if [ ! -f $FESTPATH/text2wave ] ; then
+        TTS=false
+        echo "Festival is not installed, or not installed correctly - TTS will not be done"
+    fi
 fi
 
 
@@ -81,22 +88,11 @@ AUDIO=/home/irlp/audio
 STORMAUDIO=$AUDIO/custom/stormcheck
 USE_AUS_TIME_AUDIO=true
 TMPDIR=/tmp
-NOWARN=TRUE      # We start the script with no warnings.
+NOWARN=TRUE
 STORMLOG=/tmp/stormlog
-
 WARN_LOOP=0
-# VALIDWARN=NO
-# PLAYSTRING1=""
-# PLAYSTRING2=""
-# PLAYLIST=
-#   HTMLFILE=/tmp/ts_warning.html.txt
-#   INFILE=/tmp/ts_warning.txt
-#   OUTFILE=/tmp/ts_warn_text.txt
-#   OUTWAV=/tmp/ts_warn.wav
-#   OUTWAV1=/tmp/ts_warn1
-#   FESTPATH=/usr/bin
 
-
+# loop through the warning files for the defined state
 for WARNING_FILE in $WARNING_LIST ; do
     unset DISPLIST
     unset LOC_PLAYLIST
@@ -116,7 +112,6 @@ for WARNING_FILE in $WARNING_LIST ; do
         if [ "$DEBUG" = true ]; then echo "DEBUG: $WARNING_FILE1 is not available - no warnings there"; fi
         continue
     fi
-
 
     ################################################################################
     # Extract the validity time from the XML
@@ -151,7 +146,8 @@ for WARNING_FILE in $WARNING_LIST ; do
         AREA_PHASE=$(echo $AREA | cut -f4 -d\")
         AREA_DESC=$(echo $AREA | cut -f6 -d\")
         # Ignore bogus areas
-        if [ "$AREA_AAC" != "NSW_SP001" ]; then
+        # if [ $(echo "$AREA_AAC" | grep -c "_SP001") -ne 0 ]; then
+        if [ "$AREA_AAC" != "NSW_SP001" ] && [ "$AREA_AAC" != "QLD_SP001" ]; then
             if [ "$AREA_PHASE" == "CAN" ]; then
                 if [ "$DEBUG" = true ]; then echo "DEBUG: Warning cancelled for "$AREA_AAC" ("$AREA_DESC")"; fi
             else
@@ -193,7 +189,7 @@ for WARNING_FILE in $WARNING_LIST ; do
     fi
 
     # If we want TTS for the entire warning we need to handle that here
-    if [ "$TTS" = "YES" ] ; then
+    if [ "$TTS" = true ] ; then
         echo "DEBUG: Parse $TMPDIR/$WARNING_FILE2 downloaded here..."
         # generates TTS_AUDIO
     fi
@@ -245,9 +241,9 @@ for WARNING_FILE in $WARNING_LIST ; do
         $AUDIO/custom/$WARN_END_AMPM"
 
     # If the standard generic warning is being used, insert that here
-    if [ "$STD_WARN" == "YES" ] || [ "$TTS" = "NO" ]; then
+    if [ "$STD_WARN" == "YES" ] || [ "$TTS" = false ]; then
         PLAYSTRING="$PLAYSTRING $STORMAUDIO/std_warn $PLAYSTRING2"
-    elif [ "$TTS" = "YES" ]; then
+    elif [ "$TTS" = true ]; then
         PLAYSTRING="$PLAYSTRING $TTS_AUDIO $PLAYSTRING2"
     else
         PLAYSTRING="$PLAYSTRING $STORMAUDIO/std_warn $PLAYSTRING2"
@@ -291,10 +287,14 @@ fi
 # Initiate the playback
 #
 if [ "$NOWARN" != "TRUE" ] ; then
-    ######## Just here to play locally without a node :-)  ########
-    play $WAVFILES
+    if [ "NO_TX" = true ]; then
+        if [ "PLAY_LOCAL" = true ]; then
+            play $WAVFILES
+        fi
+    fi
+
     ################
-    if [ "$NO_TX" = true ]; then
+    if [ "$NO_TX" = false ]; then
         if [ -f $LOCAL/active ] ; then
             killall -9 ispeaker >&/dev/null 2>&1
             killall -9 ispeaker_PCI >&/dev/null 2>&1
@@ -317,7 +317,7 @@ if [ "$NOWARN" != "TRUE" ] ; then
         sleep 2
         $BIN/forceunkey
 
-        if [ -f $LOCAL/active ] ; then "$SCRIPT"/sfswrapper ; fi
+        if [ -f $LOCAL/active ]; then "$SCRIPT"/sfswrapper; fi
     fi
 fi
 
