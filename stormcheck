@@ -42,6 +42,8 @@ if [ "$1" == "" ] ; then echo "You must define the state for this warning!" ; ex
 STATE=$1
 if [ "$2" == "debug" ] ; then DEBUG=true; else DEBUG=false; fi
 
+NO_TX=true
+
 if [ "$DEBUG" = true ]; then
     echo "DEBUG: STATE="$STATE
 fi
@@ -77,6 +79,7 @@ fi
 
 AUDIO=/home/irlp/audio
 STORMAUDIO=$AUDIO/custom/stormcheck
+USE_AUS_TIME_AUDIO=true
 TMPDIR=/tmp
 NOWARN=TRUE      # We start the script with no warnings.
 STORMLOG=/tmp/stormlog
@@ -214,6 +217,15 @@ for WARNING_FILE in $WARNING_LIST ; do
         echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
     fi
 
+    if [ "$USE_AUS_TIME_AUDIO" = true ]; then
+        ISSUE_HOUR=$(echo ${ISSUE_HOUR}_aus)
+        ISSUE_MIN=$(echo ${ISSUE_MIN}_aus)
+        ISSUE_AMPM=$(echo ${ISSUE_AMPM}_aus)
+        WARN_END_HOUR=$(echo ${WARN_END_HOUR}_aus)
+        WARN_END_MIN=$(echo ${WARN_END_MIN}_aus)
+        WARN_END_AMPM=$(echo ${WARN_END_AMPM}_aus)
+    fi
+
     #############################################################################
     # Build the strings of audio files for playing
     #
@@ -282,7 +294,7 @@ if [ "$NOWARN" != "TRUE" ] ; then
     ######## Just here to play locally without a node :-)  ########
     play $WAVFILES
     ################
-    if [ "$DEBUG" = false ]; then
+    if [ "$NO_TX" = true ]; then
         if [ -f $LOCAL/active ] ; then
             killall -9 ispeaker >&/dev/null 2>&1
             killall -9 ispeaker_PCI >&/dev/null 2>&1

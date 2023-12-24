@@ -1,5 +1,6 @@
 #
-# Place_a_hash_in_front_of_locations_that_are_not_required
+# Uncomment entries below that you require a warning to be announced for.
+# Do not change the text - or the warnings will not work :-)
 #
 
 ## State-based public warning areas

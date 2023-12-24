@@ -7,6 +7,8 @@ The BOM API (for want of a better term) is actually an FTP site at  ftp://ftp.bo
 The AMOC formatted XML files are downloaded from within the "Forecasts Warnings & Observations" path:
     ftp://ftp.bom.gov.au/anon/gen/fwo/
 
+Details of the AMOC schema used can be viewed at http://www.bom.gov.au/schema/doc/AMOC_V1.pdf, with the schema itself (XSD) being available at http://www.bom.gov.au/schema/v1.7/amoc.xsd
+
 Elements are mapped to an AREA code that is used within the BOM GeoSpatial data for graphical representation.
 The stormcheck script makes use of the "Public Warning (PW)" and "Metropolitan (ME)" area codes, as these are used within the warning XML.  The definition of these warning areas is embedded within the GIS shapefiles create and used by BOM, and these can be downloaded from  ftp://ftp.bom.gov.au/anon/home/adfd/spatial/
 
