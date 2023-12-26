@@ -66,12 +66,16 @@ stormcheck vk8
 ```
 
 Additional options are available:
-- Passing the --debug flag will output debugging messages whilst the script is executed
-- Passing the --notx flag will run the script, but NOT key the radio to play the announcement.
-- Passing the --local flag will play the audio locally if the --notx flag is given - this is only used for development.
+- Passing the -debug flag will output debugging messages whilst the script is executed
+- Passing the -notx flag will run the script, but NOT key the radio to play the announcement.
+- Passing the -local flag will play the audio locally if the -notx flag is given - this is only used for development.
 Using both of these flags together therefore can be used for future development on a live node
 ```
-stormcheck vk2 --debug --notx
+stormcheck vk2 -debug -notx
+```
+When develpoing on a NON-IRLP host, use the following:
+```
+stormcheck vk2 -debug -notx -local
 ```
 
 Running on an IRLP node requires the script to be run as the 'repeater' user.

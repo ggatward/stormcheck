@@ -4,41 +4,41 @@
 #
 
 ## State-based public warning areas
-QLD_PW001   Peninsula
-QLD_PW002   Gulf Country
-QLD_PW003   Northern Goldfields and Upper Flinders
-QLD_PW004   North Tropical Coast and Tablelands
-QLD_PW005   Herbert and Lower Burdekin
-QLD_PW006   Central Coast and Whitsundays
-QLD_PW007   Capricornia
-QLD_PW008   Central Highlands and Coalfields
-QLD_PW009   Central West
-QLD_PW010   North West
-QLD_PW011   Channel Country
-QLD_PW012   Maranoa and Warrego
-QLD_PW013   Darling Downs and Granite Belt
-QLD_PW014   Wide Bay and Burnett
-QLD_PW015   Southeast Coast
+#QLD_PW001   Peninsula
+#QLD_PW002   Gulf Country
+#QLD_PW003   Northern Goldfields and Upper Flinders
+#QLD_PW004   North Tropical Coast and Tablelands
+#QLD_PW005   Herbert and Lower Burdekin
+#QLD_PW006   Central Coast and Whitsundays
+#QLD_PW007   Capricornia
+#QLD_PW008   Central Highlands and Coalfields
+#QLD_PW009   Central West
+#QLD_PW010   North West
+#QLD_PW011   Channel Country
+#QLD_PW012   Maranoa and Warrego
+#QLD_PW013   Darling Downs and Granite Belt
+#QLD_PW014   Wide Bay and Burnett
+#QLD_PW015   Southeast Coast
 
 ## Metro Warning Areas
-QLD_ME001   Brisbane
-QLD_ME002   Sunshine Coast
-QLD_ME003   Gold Coast
-QLD_ME004   Brisbane and Surrounds
-QLD_ME005   Brisbane
-QLD_ME006   Sunshine Coast
-QLD_ME007   Gold Coast
-QLD_ME008   Western Downs
-QLD_ME009   South Burnett
-QLD_ME010   Toowoomba
-QLD_ME011   Southern Downs
-QLD_ME012   Scenic Rim
-QLD_ME013   Gympie
-QLD_ME014   Cherbourg
-QLD_ME015   Somerset
-QLD_ME016   Lockyer Valley
-QLD_ME017   Ipswich
-QLD_ME018   Logan
-QLD_ME019   Redland
-QLD_ME020   Moreton Bay
-QLD_ME025   Noosa
+#QLD_ME001   Brisbane
+#QLD_ME002   Sunshine Coast
+#QLD_ME003   Gold Coast
+#QLD_ME004   Brisbane and Surrounds
+#QLD_ME005   Brisbane
+#QLD_ME006   Sunshine Coast
+#QLD_ME007   Gold Coast
+#QLD_ME008   Western Downs
+#QLD_ME009   South Burnett
+#QLD_ME010   Toowoomba
+#QLD_ME011   Southern Downs
+#QLD_ME012   Scenic Rim
+#QLD_ME013   Gympie
+#QLD_ME014   Cherbourg
+#QLD_ME015   Somerset
+#QLD_ME016   Lockyer Valley
+#QLD_ME017   Ipswich
+#QLD_ME018   Logan
+#QLD_ME019   Redland
+#QLD_ME020   Moreton Bay
+#QLD_ME025   Noosa

@@ -81,9 +81,7 @@ if [ "$TTS" = true ]; then
     fi
 fi
 
-
 # Initialise some of the variables set within the script
-
 AUDIO=/home/irlp/audio
 STORMAUDIO=$AUDIO/custom/stormcheck
 USE_AUS_TIME_AUDIO=true
@@ -100,10 +98,12 @@ for WARNING_FILE in $WARNING_LIST ; do
     WARNING_URL=ftp://ftp.bom.gov.au/anon/gen/fwo
     WARNING_FILE1=$WARNING_FILE.amoc.xml
     WARNING_FILE2=$WARNING_FILE.txt
+    WARNING_FILE3=$WARNING_FILE.xml
 
     if [ "$DEBUG" = true ]; then echo; echo "DEBUG: Processing $WARNING_FILE1"; fi
     wget -qO $TMPDIR/$WARNING_FILE1 $WARNING_URL/$WARNING_FILE1
     wget -qO $TMPDIR/$WARNING_FILE2 $WARNING_URL/$WARNING_FILE2
+    wget -qO $TMPDIR/$WARNING_FILE3 $WARNING_URL/$WARNING_FILE3
     if [ $(ls -1 $TMPDIR | grep -c ^$WARNING_FILE1$) -ne 1 ]; then
         if [ "$DEBUG" = true ]; then echo "DEBUG: $WARNING_FILE1 is not available - no warnings there"; fi
         continue
@@ -114,7 +114,7 @@ for WARNING_FILE in $WARNING_LIST ; do
     fi
 
     ################################################################################
-    # Extract the validity time from the XML
+    # Extract the validity time from the AMOC XML
     START=$(cat $TMPDIR/$WARNING_FILE1 | grep validity-bgn-time-local | grep -oP '<v.*>\K.*?(?=</.*)')
     END=$(cat $TMPDIR/$WARNING_FILE1 | grep validity-end-time-local | grep -oP '<v.*>\K.*?(?=</.*)')
     HEADLINE=$(cat $TMPDIR/$WARNING_FILE1 | grep headline | grep -oP '<head.*>\K.*?(?=</.*)' | grep -iv cancel)
@@ -137,6 +137,10 @@ for WARNING_FILE in $WARNING_LIST ; do
         continue
     fi
 
+    # Extract the warning_phenomena_summary from the XML
+    PHENOMENA=$(cat $TMPDIR/$WARNING_FILE3 | sed -n -e '/<text type="warning_phenomena_summary">/,/<\/text>/p' | grep -v text | sed -e 's/<[^>]*>//g')
+    if [ "$DEBUG" = true ]; then echo "DEBUG: RAW Phenomena = $PHENOMENA"; fi
+
     #################################################################################
     # Build an array containing the areas affected by this warning
     cat $TMPDIR/$WARNING_FILE1 | grep 'area aac' > /tmp/areas
@@ -147,7 +151,7 @@ for WARNING_FILE in $WARNING_LIST ; do
         AREA_DESC=$(echo $AREA | cut -f6 -d\")
         # Ignore bogus areas
         # if [ $(echo "$AREA_AAC" | grep -c "_SP001") -ne 0 ]; then
-        if [ "$AREA_AAC" != "NSW_SP001" ] && [ "$AREA_AAC" != "QLD_SP001" ]; then
+        if [ "$AREA_AAC" != "NSW_SP001" ] && [ "$AREA_AAC" != "QLD_SP001" ] && [ "$AREA_AAC" != "VIC_SP001" ]; then
             if [ "$AREA_PHASE" == "CAN" ]; then
                 if [ "$DEBUG" = true ]; then echo "DEBUG: Warning cancelled for "$AREA_AAC" ("$AREA_DESC")"; fi
             else
@@ -194,15 +198,25 @@ for WARNING_FILE in $WARNING_LIST ; do
         # generates TTS_AUDIO
     fi
 
+    # Build the list of forcast conditions (phenomena)
+    PHENOM_STRING=
+    if [ $(echo $PHENOMENA | grep -ic 'damaging wind') -eq 1 ]; then PHENOM_STRING="$PHENOM_STRING damaging_winds"; fi
+    if [ $(echo $PHENOMENA | grep -ic 'destructive wind') -eq 1 ]; then PHENOM_STRING="$PHENOM_STRING destructive_winds"; fi
+    if [ $(echo $PHENOMENA | grep -ic 'large hail') -eq 1 ]; then PHENOM_STRING="$PHENOM_STRING large_hailstones"; fi
+    if [ $(echo $PHENOMENA | grep -ic 'giant hail') -eq 1 ]; then PHENOM_STRING="$PHENOM_STRING giant_hailstones"; fi
+    if [ $(echo $PHENOMENA | grep -ic 'heavy rainfall') -eq 1 ]; then PHENOM_STRING="$PHENOM_STRING heavy_rainfall"; fi
+    if [ $(echo $PHENOMENA | grep -ic 'intense rain') -eq 1 ]; then PHENOM_STRING="$PHENOM_STRING intense_rainfall"; fi
 
     #############################################################################
     # Output the results
     #
     echo "" > $STORMLOG
     echo "Warning for: "$DISPLIST >> $STORMLOG
+    echo "Phenomena: "$PHENOM_STRING >> $STORMLOG
     echo "Issued at: "$ISSUE_HOUR $ISSUE_MIN $ISSUE_AMPM >> $STORMLOG
     if [ "$WARN_END_HOUR" != "" ] && [ "$WARN_END_MIN" != "" ] ; then
     echo "Valid until: "$WARN_END_HOUR $WARN_END_MIN $WARN_END_AMPM >> $STORMLOG
+
     fi
     echo "" >> $STORMLOG
     if [ "$TTS" = "YES" ] ; then cat $OUTFILE >> $STORMLOG; fi
@@ -237,16 +251,23 @@ for WARNING_FILE in $WARNING_LIST ; do
     PLAYSTRING="$PLAYSTRING $PREAMBLE_FILE $LOC_PLAYLIST \
         $STORMAUDIO/issuedat $AUDIO/custom/$ISSUE_HOUR $AUDIO/custom/$ISSUE_MIN $AUDIO/custom/$ISSUE_AMPM"
 
-    PLAYSTRING2="$STORMAUDIO/nextwarn $AUDIO/custom/$WARN_END_HOUR $AUDIO/custom/$WARN_END_MIN \
+    NEXTWARN_STRING="$STORMAUDIO/nextwarn $AUDIO/custom/$WARN_END_HOUR $AUDIO/custom/$WARN_END_MIN \
         $AUDIO/custom/$WARN_END_AMPM"
 
-    # If the standard generic warning is being used, insert that here
+    # Build the forcast phenomena playlist
+    PHENOMENA_STRING="$STORMAUDIO/phenom_preamble"
+    for condition in $PHENOM_STRING; do
+        PHENOMENA_STRING="$PHENOMENA_STRING $STORMAUDIO/$condition"
+    done
+    PHENOMENA_STRING="$PHENOMENA_STRING $STORMAUDIO/phenom_post"
+
+    # Put the strings together to form the complete announcement
     if [ "$STD_WARN" == "YES" ] || [ "$TTS" = false ]; then
-        PLAYSTRING="$PLAYSTRING $STORMAUDIO/std_warn $PLAYSTRING2"
+        PLAYSTRING="$PLAYSTRING $PHENOMENA_STRING $NEXTWARN_STRING"
     elif [ "$TTS" = true ]; then
-        PLAYSTRING="$PLAYSTRING $TTS_AUDIO $PLAYSTRING2"
+        PLAYSTRING="$PLAYSTRING $TTS_AUDIO $NEXTWARN_STRING"
     else
-        PLAYSTRING="$PLAYSTRING $STORMAUDIO/std_warn $PLAYSTRING2"
+        PLAYSTRING="$PLAYSTRING $PHENOMENA_STRING $NEXTWARN_STRING"
     fi
 
 done
@@ -275,7 +296,8 @@ if [ -f /usr/bin/sox ] ; then
             cat $FILE.ul >> $TMPDIR/wavefile.ul
         fi
     done
-    /usr/bin/sox -r 8000 -c 1 $TMPDIR/wavefile.ul $TMPDIR/wavefile.wav
+    # Output wav format must be Microsoft PCM (-e un), 8000kHz (-r 8000) Mono (-c 1).
+    /usr/bin/sox -r 8000 -c 1 $TMPDIR/wavefile.ul -e un $TMPDIR/wavefile.wav
     WAVFILES="$TMPDIR/wavefile.wav"
 else
     for FILE in $PLAYSTRING ; do
@@ -321,5 +343,9 @@ if [ "$NOWARN" != "TRUE" ] ; then
     fi
 fi
 
-rm -f $TMPDIR/temp.ul $TMPDIR/wavefile.ul $TMPDIR/wavefile.wav $OUTFILE $OUTWAV1.wav $TMPDIR/*.xml
+# Post-run cleanup
+rm -f $TMPDIR/temp.ul $TMPDIR/wavefile.ul
+if [ "$DEBUG" = false ]; then
+    $TMPDIR/wavefile.wav $OUTFILE $TMPDIR/ID*.xml $TMPDIR/ID*.txt
+fi
 exit 0

@@ -4,21 +4,21 @@
 #
 
 ## State-based public warning areas
-TAS_PW001   Furneaux Islands
-TAS_PW002   North East
-TAS_PW003   East Coast
-TAS_PW004   Central North
-TAS_PW005   Midlands
-TAS_PW006   South East
-TAS_PW007   Upper Derwent Valley
-TAS_PW008   Central Plateau
-TAS_PW009   Western
-TAS_PW010   North West Coast
-TAS_PW011   King Island
+#TAS_PW001   Furneaux Islands
+#TAS_PW002   North East
+#TAS_PW003   East Coast
+#TAS_PW004   Central North
+#TAS_PW005   Midlands
+#TAS_PW006   South East
+#TAS_PW007   Upper Derwent Valley
+#TAS_PW008   Central Plateau
+#TAS_PW009   Western
+#TAS_PW010   North West Coast
+#TAS_PW011   King Island
 
 
 ## Metro Warning Areas
-TAS_ME001   Hobart
-TAS_ME002   Launceston
-TAS_ME003   Overland Track
-TAS_ME004   Hobart and Surrounds
+#TAS_ME001   Hobart
+#TAS_ME002   Launceston
+#TAS_ME003   Overland Track
+#TAS_ME004   Hobart and Surrounds
