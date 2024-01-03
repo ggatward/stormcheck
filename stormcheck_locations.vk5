@@ -4,34 +4,34 @@
 #
 
 ## State-based public warning areas
-#SA_PW001    Adelaide Metropolitan
-#SA_PW002    Yorke Peninsula
-#SA_PW003    Kangaroo Island
-#SA_PW004    Upper South East
-#SA_PW005    Lower South East
-#SA_PW006    Riverland
-#SA_PW007    Murraylands
-#SA_PW008    Mid North
-#SA_PW009    Flinders
-#SA_PW010    West Coast
-#SA_PW011    Eastern Eyre Peninsula
-#SA_PW012    Lower Eyre Peninsula
-#SA_PW013    North West Pastoral
-#SA_PW014    North East Pastoral
-#SA_PW015    Mount Lofty Ranges
+SA_PW001    Adelaide Metropolitan
+SA_PW002    Yorke Peninsula
+SA_PW003    Kangaroo Island
+SA_PW004    Upper South East
+SA_PW005    Lower South East
+SA_PW006    Riverland
+SA_PW007    Murraylands
+SA_PW008    Mid North
+SA_PW009    Flinders
+SA_PW010    West Coast
+SA_PW011    Eastern Eyre Peninsula
+SA_PW012    Lower Eyre Peninsula
+SA_PW013    North West Pastoral
+SA_PW014    North East Pastoral
+SA_PW015    Mount Lofty Ranges
 
 
 ## Metro Warning Areas
-#SA_ME001    Adelaide
-#SA_ME002    Adelaide and Mount Lofty Ranges
-#SA_ME003    Adelaide Area
-#SA_ME004    Adelaide
-#SA_ME005    Adelaide Hills
-#SA_ME006    Playford
-#SA_ME007    Barossa
-#SA_ME008    Gawler
-#SA_ME009    Mount Barker
-#SA_ME010    Onkaparinga
-#SA_ME011    Yankalilla
-#SA_ME012    Victor Harbor
-#SA_ME013    Western Alexandrina
+SA_ME001    Adelaide
+SA_ME002    Adelaide and Mount Lofty Ranges
+SA_ME003    Adelaide Area
+SA_ME004    Adelaide
+SA_ME005    Adelaide Hills
+SA_ME006    Playford
+SA_ME007    Barossa
+SA_ME008    Gawler
+SA_ME009    Mount Barker
+SA_ME010    Onkaparinga
+SA_ME011    Yankalilla
+SA_ME012    Victor Harbor
+SA_ME013    Western Alexandrina

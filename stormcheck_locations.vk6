@@ -4,22 +4,22 @@
 #
 
 ## State-based public warning areas
-#WA_PW001    Kimberley
-#WA_PW002    Pilbara
-#WA_PW003    Gascoyne
-#WA_PW004    Goldfields
-#WA_PW005    Eucla
-#WA_PW006    North Interior
-#WA_PW007    South Interior
-#WA_PW008    Central West
-#WA_PW009    Lower West
-#WA_PW010    South West
-#WA_PW011    South Coastal
-#WA_PW012    South East Coastal
-#WA_PW013    Great Southern
-#WA_PW014    Central Wheat Belt
+WA_PW001    Kimberley
+WA_PW002    Pilbara
+WA_PW003    Gascoyne
+WA_PW004    Goldfields
+WA_PW005    Eucla
+WA_PW006    North Interior
+WA_PW007    South Interior
+WA_PW008    Central West
+WA_PW009    Lower West
+WA_PW010    South West
+WA_PW011    South Coastal
+WA_PW012    South East Coastal
+WA_PW013    Great Southern
+WA_PW014    Central Wheat Belt
 
 
 ## Metro Warning Areas
-#WA_ME001    Perth
-#WA_ME002    Perth and Surrounds
+WA_ME001    Perth
+WA_ME002    Perth and Surrounds

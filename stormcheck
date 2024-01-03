@@ -8,8 +8,20 @@
 # v0.9 - 13-Dec-04 - Error corrections
 # v1.0 - 20-Jan-05 - Found a fix for the VK2 graphical warning problem
 #
-# v3.0 - 26-Dec-23 - Major rewrite and code review to use BOM AMOC XML, after years of, well...
+# v3.0 - 03-Jan-23 - Major rewrite and code review to use BOM AMOC XML, after years of, well...
 #
+
+
+#######################################################################
+#
+# Function definition
+# The post-run cleanup function
+cleanup() {
+    rm -f $TMPDIR/temp.ul $TMPDIR/wavefile.ul $TMPDIR/areas $TMPDIR/stormlog
+    if [ "$DEBUG" = false ]; then
+        rm -f $TMPDIR/wavefile.wav $OUTFILE $TMPDIR/ID*.xml $TMPDIR/ID*.txt
+    fi
+}
 
 
 #######################################################################
@@ -31,6 +43,9 @@ if [ "$DEBUG" = true ]; then
     echo "DEBUG: STATE="$STATE
 fi
 
+# Call the cleanup() function on any exit (ctrl-c etc)
+trap cleanup EXIT
+
 #######################################################################
 #
 if [ "$DEBUG" = false ]; then
@@ -51,6 +66,10 @@ if [ "$DEBUG" = false ]; then
 
     if [ ! -f $LOCAL/enable ] ; then exit 0 ; fi
     if [ -f $LOCAL/active ] ; then exit 0 ; fi
+else
+    CUSTOM=$(pwd)
+    AUDIO=/home/irlp/audio
+    BIN=/home/irlp/bin
 fi
 
 ################################################################################################
@@ -64,7 +83,6 @@ if [ "$STATE" == "vk6" ] ; then WARNING_LIST="IDW21033 IDW21034 IDW21035" ; fi
 if [ "$STATE" == "vk7" ] ; then WARNING_LIST="IDT21033 IDT21035" ; fi
 if [ "$STATE" == "vk8" ] ; then WARNING_LIST="IDD21033 IDD21034 IDD21035" ; fi
 
-CUSTOM=$(pwd)
 LOCLIST=$CUSTOM/stormcheck_locations.$STATE
 
 ################################################################################################
@@ -82,7 +100,6 @@ if [ "$TTS" = true ]; then
 fi
 
 # Initialise some of the variables set within the script
-AUDIO=/home/irlp/audio
 STORMAUDIO=$AUDIO/custom/stormcheck
 USE_AUS_TIME_AUDIO=true
 TMPDIR=/tmp
@@ -158,7 +175,7 @@ for WARNING_FILE in $WARNING_LIST ; do
                 if [ "$DEBUG" = true ]; then echo "DEBUG: Warning current for "$AREA_AAC" ("$AREA_DESC")"; fi
                 WARNCOUNT=$(expr $WARNCOUNT + 1)
                 # Check if the active warning areas match our selectors
-                if [ $(grep -c ^$AREA_AAC stormcheck_locations.$STATE) -ne 0 ]; then
+                if [ $(grep -c ^$AREA_AAC $CUSTOM/stormcheck_locations.$STATE) -ne 0 ]; then
                     NOWARN=FALSE
                     AREA_FILE=$(echo $AREA_DESC | tr ' ' '_' | tr '/' '_' | tr '-' '_')
                     DISPLIST="$DISPLIST $AREA_DESC"
@@ -343,9 +360,4 @@ if [ "$NOWARN" != "TRUE" ] ; then
     fi
 fi
 
-# Post-run cleanup
-rm -f $TMPDIR/temp.ul $TMPDIR/wavefile.ul
-if [ "$DEBUG" = false ]; then
-    $TMPDIR/wavefile.wav $OUTFILE $TMPDIR/ID*.xml $TMPDIR/ID*.txt
-fi
 exit 0
