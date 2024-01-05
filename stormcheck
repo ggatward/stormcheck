@@ -8,7 +8,7 @@
 # v0.9 - 13-Dec-04 - Error corrections
 # v1.0 - 20-Jan-05 - Found a fix for the VK2 graphical warning problem
 #
-# v3.0 - 03-Jan-23 - Major rewrite and code review to use BOM AMOC XML, after years of, well...
+# v3.0 - 05-Jan-24 - Major rewrite and code review to use BOM AMOC XML, after years of, well...
 #
 
 
@@ -54,23 +54,20 @@ if [ "$DEBUG" = false ]; then
         echo This program must be run as user REPEATER!
         exit 1
     fi
-
-    . /home/irlp/custom/environment
-
-    # Make sure we have sourced the environment file
-    if [ "$RUN_ENV" != "TRUE" ] ; then
-        echo "You must source the environment file first. Do this by running:"
-        echo ". /home/irlp/custom/environment"
-        exit 1
-    fi
-
-    if [ ! -f $LOCAL/enable ] ; then exit 0 ; fi
-    if [ -f $LOCAL/active ] ; then exit 0 ; fi
-else
-    CUSTOM=$(pwd)
-    AUDIO=/home/irlp/audio
-    BIN=/home/irlp/bin
 fi
+
+# Make sure we have sourced the environment file
+. /home/irlp/custom/environment
+if [ "$RUN_ENV" != "TRUE" ] ; then
+    echo "You must source the environment file first. Do this by running:"
+    echo ". /home/irlp/custom/environment"
+    exit 1
+fi
+
+# Check state of IRLP node
+if [ ! -f $LOCAL/enable ] ; then exit 0 ; fi
+if [ -f $LOCAL/active ] ; then exit 0 ; fi
+
 
 ################################################################################################
 # Define the warning files to download
