@@ -9,6 +9,7 @@
 # v1.0 - 20-Jan-05 - Found a fix for the VK2 graphical warning problem
 #
 # v3.0 - 05-Jan-24 - Major rewrite and code review to use BOM AMOC XML, after years of, well...
+# v3.1 -   -Jan-24 - Added logging to the IRLP ${LOGFILE}
 #
 
 
@@ -21,6 +22,10 @@ cleanup() {
     if [ "$DEBUG" = false ]; then
         rm -f $TMPDIR/wavefile.wav $OUTFILE $TMPDIR/ID*.xml $TMPDIR/ID*.txt
     fi
+}
+
+loggit() {
+    echo "$(date '+%b %d %Y %T') stormcheck: $1" >> $LOGFILE
 }
 
 
@@ -240,6 +245,9 @@ for WARNING_FILE in $WARNING_LIST ; do
         cat $STORMLOG
         echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
     fi
+    loggit "Warning for $DISPLIST"
+    loggit "Issued at $ISSUE_HOUR $ISSUE_MIN $ISSUE_AMPM, Valid until $WARN_END_HOUR $WARN_END_MIN $WARN_END_AMPM"
+    loggit "For $PHENOM_STRING"
 
     if [ "$USE_AUS_TIME_AUDIO" = true ]; then
         ISSUE_HOUR=$(echo ${ISSUE_HOUR}_aus)
@@ -290,6 +298,7 @@ done
 if [ "$NOWARN" == "TRUE" ]; then
     if [ "$DEBUG" = true ]; then echo "DEBUG: No warnings of interest - exiting"; fi
     rm -f $TMPDIR/*.xml
+    loggit "No warnings of interest"
     exit 0
 fi
 
@@ -331,6 +340,7 @@ if [ "$NOWARN" != "TRUE" ] ; then
 
     ################
     if [ "$NO_TX" = false ]; then
+        loggit "Transmitting storm warning"
         if [ -f $LOCAL/active ] ; then
             killall -9 ispeaker >&/dev/null 2>&1
             killall -9 ispeaker_PCI >&/dev/null 2>&1
